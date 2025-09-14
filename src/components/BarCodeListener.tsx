@@ -80,6 +80,9 @@ export function BarCodeListener({ priorityRooms, defaultDuration = 120 }: Props)
     }
   }, [buffer, priorityRooms, defaultDuration])
 
+  console.log(codes);
+  
+
   return (
     <div className="flex flex-col gap-4">
       {loading && <p className="text-sm text-blue-500">Ajout en cours...</p>}

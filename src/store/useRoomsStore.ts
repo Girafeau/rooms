@@ -1,6 +1,6 @@
 import { create } from "zustand"
 import { supabase } from "../lib/supabase"
-import type { RoomWithStatus, Room } from "../types/Room"
+import type { RoomWithStatus } from "../types/Room"
 import type { Use } from "../types/Use"
 
 interface RoomsStore {
@@ -57,7 +57,7 @@ export const useRoomsStore = create<RoomsStore>((set, get) => ({
     set({ rooms: withStatus, groupedByFloor })
   },
   subscribeRealtime: () => {
-    const channel = supabase
+    supabase
       .channel("room-uses-changes")
       .on(
         "postgres_changes",
@@ -69,7 +69,6 @@ export const useRoomsStore = create<RoomsStore>((set, get) => ({
     // Ticking : met à jour timeRemaining chaque seconde
     setInterval(() => {
       set((state) => {
-        const now = Date.now()
         const updatedRooms = state.rooms.map((room) => {
           if (!room.lastUse || room.status === 1) return room
           const timeRemaining = computeTimeRemaining(room.lastUse)

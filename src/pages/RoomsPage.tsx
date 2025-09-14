@@ -1,5 +1,4 @@
 import { RoomCard } from "../components/RoomCard"
-import { Settings } from "../components/Settings"
 import { useRoomsStore } from "../store/useRoomsStore"
 
 
