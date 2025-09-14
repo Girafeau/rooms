@@ -1,0 +1,21 @@
+@import url('https://fonts.googleapis.com/css2?family=Borel&family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
+@import "tailwindcss";
+
+@theme {
+    --color-*: initial;
+    --color-white: #FFFFFF;
+    --color-green: #55D940;
+    --color-green-light: rgba(85, 217, 64, 0.2);
+    --color-red: #FF4548;
+    --color-red-light: rgba(255, 69, 72, 0.15);
+    --color-orange: #FF9900;
+    --color-orange-light: rgba(255, 153, 0, 0.15);
+    --color-grey: #F5F5F5;
+    --color-dark-grey: #E0E0E0;
+    --color-blue: #4A6EFF;
+    --color-dark-green: #149600;
+    --color-dark-red: #D10101;
+    --color-dark-orange: #CE5900;
+    --font-sans: "Montserrat", sans-serif;
+    --font-display: "Borel", sans-serif;
+}
