@@ -47,7 +47,7 @@ const soon = [...soonlyKickableRooms].slice(0, 5)
                     <div>
                     <p className="text-sm">Il n'y a pour l'instant aucun studio de libre. C'est triste. Voici des petits canards pour te réconforter.</p>
                     <img
-                    src="src/assets/canard.png"
+                    src="/canard.png"
                     alt="Logo"
                     className="object-contain"
                   />

@@ -18,7 +18,7 @@ export default function App() {
                 <p className="text-sm font-display">v0.1 alpha</p>
                 </div>
                 <img
-                  src="src/assets/cat.png"
+                  src="/cat.png"
                   alt="Logo"
                   className="w-[60px] h-[60px] object-contain"
                 />
