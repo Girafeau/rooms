@@ -1,5 +1,6 @@
 import { useSettingsStore } from "../store/useSettingsStore"
 import { Settings as SettingsIcon, X } from "lucide-react"
+import { IconCheckbox } from "./IconCheckbox"
 
 export function Settings() {
   const { showScores, toggleScores, isOpen, toggleOpen } = useSettingsStore()
@@ -20,16 +21,11 @@ export function Settings() {
       {isOpen && (
         <div className="absolute top-20 right-0 p-4 bg-grey border-dark-grey w-100 space-y-2 z-10">
           <h3 className="mb-2">Paramètres</h3>
-
-          <label className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              checked={showScores}
-              onChange={toggleScores}
-              className="text-sm w-4 h-4"
-            />
-            <span>Afficher la notation des studios</span>
-          </label>
+          <IconCheckbox
+            label="Masquer la notation des studios"
+            checked={!showScores}
+            onChange={toggleScores}
+          />
         </div>
       )}
     </div>

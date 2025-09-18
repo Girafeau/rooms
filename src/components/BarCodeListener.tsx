@@ -11,11 +11,11 @@ type Props = {
 export function BarCodeListener({ priorityRooms, defaultDuration = 120 }: Props) {
   const [toastMessage, setToastMessage] = useState<string | null>(null)
   const [buffer, setBuffer] = useState("")
-  const [codes, setCodes] = useState<string[]>([])
+  const [, setCodes] = useState<string[]>([])
   const [loading, setLoading] = useState(false)
 
-  const showToast = (personName: string, roomNumber: number) => {
-    setToastMessage(`${personName} a scanné à ${new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} et est inscrit dans le studio ${roomNumber}.`)
+  const showToast = (personName: string, roomNumber: string) => {
+    setToastMessage(`${personName} scanné à ${new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} et inscrit dans le studio ${roomNumber}.`)
   }
 
   useEffect(() => {
@@ -54,9 +54,9 @@ export function BarCodeListener({ priorityRooms, defaultDuration = 120 }: Props)
 
           if (insertError) console.error("Erreur ajout :", insertError)
 
-            if (!insertError) {
-              showToast(scannedText, firstRoom.number)
-            }
+          if (!insertError) {
+            showToast(scannedText, firstRoom.number)
+          }
 
         } finally {
           setLoading(false)
@@ -80,18 +80,19 @@ export function BarCodeListener({ priorityRooms, defaultDuration = 120 }: Props)
     }
   }, [buffer, priorityRooms, defaultDuration])
 
-  console.log(codes);
-  
-
   return (
-    <div className="flex flex-col gap-4">
-      {loading && <p className="text-sm text-blue-500">Ajout en cours...</p>}
-      <div className="flex">
-      {toastMessage && (
-        <Toast message={toastMessage} onClose={() => setToastMessage(null)} />
-      )}
-    </div>
+    <div className="grid grid-cols-2 gap-4">
+      <div className="p-4 bg-grey border-dashed border-1 border-dark-grey flex flex-col">
+        <p className="text-sm">Scannez une carte.</p>
+        {loading && <p className="text-sm text-blue-500">Ajout en cours...</p>}
       </div>
-      
+
+      <div className="flex">
+        {toastMessage && (
+          <Toast message={toastMessage} onClose={() => setToastMessage(null)} />
+        )}
+      </div>
+    </div>
+
   )
 }

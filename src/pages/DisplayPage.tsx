@@ -1,0 +1,96 @@
+import { RoomCardDisplay } from "../components/RoomCardDisplay"
+import { useRoomsStore } from "../store/useRoomsStore"
+
+function formatDuration(ms: number): string {
+    if (ms <= 0) return "bientôt"
+    const totalSeconds = Math.floor(ms / 1000)
+    const hours = Math.floor(totalSeconds / 3600)
+    const minutes = Math.floor((totalSeconds % 3600) / 60)
+    const seconds = totalSeconds % 60
+  
+    return [hours, minutes, seconds]
+      .map((v) => String(v).padStart(2, "0"))
+      .join(":")
+  }
+
+export default function DisplayPage() {
+  const { rooms } = useRoomsStore()
+
+  // Filtrage par types dans la page
+  const filteredRooms = rooms.filter((r) => r.type === "Studio")
+  const availableStudios = filteredRooms.filter(
+    (room) => (room.status === 1 || room.status === 2)
+  )
+
+  const nextAvailableTime =
+  availableStudios.length === 0
+    ? Math.min(
+        ...filteredRooms
+          .filter((r) => r.status === 0 && r.timeRemaining !== null)
+          .map((r) => r.timeRemaining as number)
+      )
+    : null
+
+  // Regrouper par étage pour l'affichage
+  const groupedByFloorFiltered = filteredRooms.reduce<Record<number, typeof filteredRooms>>(
+    (acc, room) => {
+      if (!acc[room.floor]) acc[room.floor] = []
+      acc[room.floor].push(room)
+      return acc
+    },
+    {}
+  )
+
+  const sortedFloors = Object.keys(groupedByFloorFiltered)
+    .map(Number)
+    .sort((a, b) => b - a)
+
+    
+  return (
+    <div className="flex flex-col gap-4 p-4">
+        
+      {/* Encadré Studios */}
+     
+        {availableStudios.length > 0 ? (
+             <div className="flex p-4 bg-grey text-lg">
+          <p className="">
+            {availableStudios.length} studios disponibles
+          </p>
+        </div>
+        ) : nextAvailableTime !== Infinity && nextAvailableTime && (
+            <div className="flex p-4 bg-grey text-lg">
+          <p className="">
+            Pas de studio disponible. Prochain dans {formatDuration(nextAvailableTime)}.
+          </p>
+        </div>
+        )}
+ 
+      {sortedFloors.map((floor) => (
+        <div key={floor}>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-6 gap-4">
+            <div className="text-center text-sm">
+              <div className="p-4 flex flex-col items-center h-full justify-center bg-grey">
+                {floor > 0 ?
+                  <div>
+                    <h2 className="text-l font-semibold">
+                      {floor}{floor === 1 ? " er".toLocaleUpperCase() : " ème".toLocaleUpperCase()}
+                    </h2>
+                    <p className="text-sm font-semibold">{"étage".toLocaleUpperCase()}</p>
+                  </div> : <h2 className="text-l font-semibold">
+                    {"sous-sol".toUpperCase()}
+                  </h2>
+                }
+              </div>
+            </div>
+            {groupedByFloorFiltered[floor].sort((a, b) => (Number(a.number) || 0) - (Number(b.number) || 0)).map((room) => (
+               
+              <RoomCardDisplay key={room.id} room={room} />
+     
+            ))}
+          </div>
+          
+        </div>
+      ))}
+    </div>
+  )
+}

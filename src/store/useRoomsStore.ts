@@ -5,9 +5,9 @@ import type { Use } from "../types/Use"
 
 interface RoomsStore {
   rooms: RoomWithStatus[]
-  groupedByFloor: Record<number, RoomWithStatus[]>
   fetchRooms: () => Promise<void>
   subscribeRealtime: () => void
+  stopRealtime: () => void
 }
 
 function computeRoomStatus(use: Use | null, now: Date = new Date()): number {
@@ -27,16 +27,20 @@ function computeTimeRemaining(use: Use | null): number | null {
   return entry.getTime() + (use.max_duration ?? 0) * 60_000 - Date.now()
 }
 
+let tickTimer: NodeJS.Timeout | null = null
+let supabaseChannel: ReturnType<typeof supabase.channel> | null = null
+
 export const useRoomsStore = create<RoomsStore>((set, get) => ({
   rooms: [],
   groupedByFloor: {},
+
   fetchRooms: async () => {
     const { data: roomsData } = await supabase.from("rooms").select("*")
     const { data: lastUses } = await supabase.from("last_uses").select("*")
     if (!roomsData) return
 
-    const usesByRoom: Record<number, Use> = {};
-    (lastUses ?? []).forEach((u) => {
+    const usesByRoom: Record<number, Use> = {}
+    ;(lastUses ?? []).forEach((u) => {
       if (u && typeof u.room_id === "number") usesByRoom[u.room_id] = u
     })
 
@@ -48,44 +52,69 @@ export const useRoomsStore = create<RoomsStore>((set, get) => ({
       return { ...room, status, lastUse, timeRemaining }
     })
 
-    const groupedByFloor = withStatus.reduce<Record<number, RoomWithStatus[]>>((acc, room) => {
-      if (!acc[room.floor]) acc[room.floor] = []
-      acc[room.floor].push(room)
-      return acc
-    }, {})
-
-    set({ rooms: withStatus, groupedByFloor })
+    set({ rooms: withStatus })
   },
+
   subscribeRealtime: () => {
-    supabase
+    // éviter plusieurs abonnements
+    if (supabaseChannel) return
+
+    // Abonnement Supabase
+    supabaseChannel = supabase
       .channel("room-uses-changes")
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "uses" },
-        () => get().fetchRooms()
-      )
+      .on("postgres_changes", { event: "*", schema: "public", table: "uses" }, () => {
+        get().fetchRooms()
+      })
       .subscribe()
 
-    // Ticking : met à jour timeRemaining chaque seconde
-    setInterval(() => {
-      set((state) => {
-        const updatedRooms = state.rooms.map((room) => {
-          if (!room.lastUse || room.status === 1) return room
-          const timeRemaining = computeTimeRemaining(room.lastUse)
-          let status = room.status
-          if (timeRemaining !== null && timeRemaining <= 0 && status !== 2) status = 2
-          return { ...room, timeRemaining, status }
+    // Ticking toutes les secondes
+    if (!tickTimer) {
+      tickTimer = setInterval(() => {
+        set((state) => {
+          const updatedRooms = state.rooms.map((room) => {
+            if (!room.lastUse || room.status === 1) return room
+
+            const timeRemaining = computeTimeRemaining(room.lastUse)
+            let status = room.status
+
+            // si expiré => délogeable
+            if (
+              timeRemaining !== null &&
+              timeRemaining <= 0 &&
+              status !== 2 &&
+              !room.lastUse.kickable_activation_time
+            ) {
+              status = 2
+              supabase
+                .from("uses")
+                .update({ kickable_activation_time: new Date().toISOString() })
+                .eq("id", room.lastUse.id)
+                .then(({ error }) => {
+                  if (error) console.error("Erreur mise à jour kickable_activation_time :", error)
+                })
+            }
+
+            return { ...room, timeRemaining, status }
+          })
+
+          return { rooms: updatedRooms }
         })
-        const groupedByFloor = updatedRooms.reduce<Record<number, RoomWithStatus[]>>((acc, room) => {
-          if (!acc[room.floor]) acc[room.floor] = []
-          acc[room.floor].push(room)
-          return acc
-        }, {})
-        return { rooms: updatedRooms, groupedByFloor }
-      })
-    }, 1000)
-  }
+      }, 1000)
+    }
+  },
+
+  stopRealtime: () => {
+    if (supabaseChannel) {
+      supabase.removeChannel(supabaseChannel)
+      supabaseChannel = null
+    }
+    if (tickTimer) {
+      clearInterval(tickTimer)
+      tickTimer = null
+    }
+  },
 }))
+
 
 // Auto-init store
 useRoomsStore.getState().fetchRooms()

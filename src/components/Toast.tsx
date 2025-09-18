@@ -13,7 +13,7 @@ export function Toast({ message, onClose, duration = 3000 }: Props) {
   }, [onClose, duration])
 
   return (
-    <div className="p-4 bg-grey animate-slide-in animate-fade-in">
+    <div className="p-4 bg-grey animate-slide-in animate-fade-in text-sm">
       {message}
     </div>
   )

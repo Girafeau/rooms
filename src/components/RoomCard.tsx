@@ -5,6 +5,7 @@ import { Check, X, Plus, Minus } from "lucide-react"
 import { ScoreBar } from "./ScoreBar"
 import { useSettingsStore } from "../store/useSettingsStore"
 import formatHHMM from "../utils/format"
+import { buttonBase, inputBase } from "../App"
 
 type Props = {
     room: RoomWithStatus
@@ -17,9 +18,9 @@ const colors: Record<RoomWithStatus["status"], string> = {
 }
 
 const darkColors: Record<RoomWithStatus["status"], string> = {
-    1: "",
-    0: "",
-    2: ""
+    1: "text-green-dark",
+    0: "text-red-dark",
+    2: "text-orange-dark"
 }
 
 const lightColors: Record<RoomWithStatus["status"], string> = {
@@ -100,18 +101,24 @@ export function RoomCard({ room }: Props) {
         setShowForm(true)
     }
 
-    const buttonBase = "w-full flex items-center justify-center gap-2 px-4 py-2 font-semibold transition-colors bg-grey border-1 border-dark-grey hover:bg-dark-grey disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-
     return (
         <div className="flex flex-col gap-2">
             <div className={`p-4 flex flex-col transition ${colors[room.status]}`}>
                 <div className="flex justify-between items-center">
-                <h3 className={`text-lg font-bold ${darkColors[room.status]}`}>{room.number}</h3>
-                
+                <h3 className={`text-lg font-bold mr-4`}>{room.number}</h3>
+                {room.name && (
+                    <span className={`text-sm font-semibold truncate cursor-default ${darkColors[room.status]}`}>{room.name.toUpperCase()}</span>
+                )}
                 </div>
 
-                <p className="text-sm">{room.hidden_description}</p>
+                
             </div>
+            {room.hidden_description && (
+                  <div className={`p-4 ${lightColors[room.status]} flex flex-col`}>
+                  <p className="text-sm">{room.hidden_description}</p>
+              </div>
+            )}
+          
 
             {showScores && room.score && (
                 <div className="w-full">
@@ -175,24 +182,23 @@ export function RoomCard({ room }: Props) {
                     }}
                 >
                     <hr className="border-dark-grey"></hr>
-                    <p className="text-sm">Nom et prénom</p>
                     <input
                         ref={inputRef}
                         type="text"
-                        placeholder=""
-                        className="bg-grey px-4 py-2 w-full focus:border-sky-500 focus:outline focus:outline-dark-grey focus:invalid:border-red"
+                        placeholder="Nom et prénom"
+                        className={`${inputBase}`}
                         value={personName}
                         onChange={(e) => setPersonName(e.target.value.toUpperCase())}
                     />
-                    <p className="text-sm">Durée (min)</p>
+                   
                     <input
                         type="number"
                         placeholder="Durée (min)"
-                        className="bg-grey px-4 py-2 w-full focus:border-sky-500 focus:outline focus:outline-dark-grey focus:invalid:border-red [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                        className={`${inputBase}`}
                         value={duration}
                         onChange={(e) => setDuration(Number(e.target.value))}
                     />
-                    <hr className="border-dark-grey"></hr>
+                    
                     <div className="flex gap-2">
                         <button
                             className={`${buttonBase}`}

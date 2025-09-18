@@ -27,22 +27,21 @@ const lightColors: Record<RoomWithStatus["status"], string> = {
     2: "bg-orange-light"
 }
 
-export function MinimalRoomCard({ room, index }: Props) {
+export function MinimalRoomCard({ room }: Props) {
   return (
     <div className="flex flex-col gap-2">
 
-    <p className="mr-3 font-mono text-lg">{index + 1}.</p>
     <div className={`p-4 ${colors[room.status]} flex flex-col transition h-full`}>
        
     <h3 className="text-lg font-bold">{room.number}</h3>
     {room.status === 1 && (
-        <p className="text-sm">Le studio est libre.</p>
+        <p className="text-sm"></p>
       )}
       {room.status === 2 && room.lastUse &&(
-        <p className="text-sm">Le studio est occupé mais l'occupant a dépassé le temps dédié à {formatEndTime(room.lastUse.entry_time, room.lastUse.max_duration)}.</p>
+        <p className="text-sm">{formatHHMM(room.timeRemaining)}</p>
       )}
        {room.status === 0 && (
-        <p className="text-sm">Le studio est occupé pendant encore {formatHHMM(room.timeRemaining)}.</p>
+        <p className="text-sm">{formatHHMM(room.timeRemaining)}</p>
       )}
     </div>
     {room.description && (

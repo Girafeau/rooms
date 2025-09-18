@@ -4,6 +4,7 @@
 @theme {
     --color-*: initial;
     --color-white: #FFFFFF;
+    --color-black: #000000;
     --color-green: #55D940;
     --color-green-light: rgba(85, 217, 64, 0.2);
     --color-red: #FF4548;
@@ -13,9 +14,9 @@
     --color-grey: #F5F5F5;
     --color-dark-grey: #E0E0E0;
     --color-blue: #4A6EFF;
-    --color-dark-green: #149600;
-    --color-dark-red: #D10101;
-    --color-dark-orange: #CE5900;
+    --color-green-dark: #1F920D;
+    --color-red-dark: #A60000;
+    --color-orange-dark: #CE5900;
     --font-sans: "Montserrat", sans-serif;
     --font-display: "Borel", sans-serif;
 }
