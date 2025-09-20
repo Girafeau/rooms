@@ -60,7 +60,7 @@ export function RoomCard({ room }: Props) {
         }
 
         const { error } = await supabase.from("uses").insert({
-            room_id: room.id,
+            room_number: room.number,
             user_full_name: personName,
             entry_time: new Date().toISOString(),
             max_duration: duration,
@@ -76,7 +76,7 @@ export function RoomCard({ room }: Props) {
             console.error(error)
         }
 
-        
+
         setLoading(false)
     }
 
@@ -90,7 +90,7 @@ export function RoomCard({ room }: Props) {
             .eq("id", room.lastUse.id)
 
         if (error) console.error(error)
-        
+
         setLoading(false)
 
     }
@@ -105,20 +105,19 @@ export function RoomCard({ room }: Props) {
         <div className="flex flex-col gap-2">
             <div className={`p-4 flex flex-col transition ${colors[room.status]}`}>
                 <div className="flex justify-between items-center">
-                <h3 className={`text-lg font-bold mr-4`}>{room.number}</h3>
-                {room.name && (
-                    <span className={`text-sm font-semibold truncate cursor-default ${darkColors[room.status]}`}>{room.name.toUpperCase()}</span>
-                )}
+                    <h3 className={`text-lg font-bold mr-4`}>{room.number}</h3>
+
+                    <span className={`text-sm font-semibold truncate cursor-default ${darkColors[room.status]}`}>{room.type.toUpperCase()}</span>
+
                 </div>
 
-                
             </div>
             {room.hidden_description && (
-                  <div className={`p-4 ${lightColors[room.status]} flex flex-col`}>
-                  <p className="text-sm">{room.hidden_description}</p>
-              </div>
+                <div className={`p-4 ${lightColors[room.status]} flex flex-col`}>
+                    <p className="text-sm">{room.hidden_description}</p>
+                </div>
             )}
-          
+
 
             {showScores && room.score && (
                 <div className="w-full">
@@ -190,7 +189,7 @@ export function RoomCard({ room }: Props) {
                         value={personName}
                         onChange={(e) => setPersonName(e.target.value.toUpperCase())}
                     />
-                   
+
                     <input
                         type="number"
                         placeholder="Durée (min)"
@@ -198,7 +197,7 @@ export function RoomCard({ room }: Props) {
                         value={duration}
                         onChange={(e) => setDuration(Number(e.target.value))}
                     />
-                    
+
                     <div className="flex gap-2">
                         <button
                             className={`${buttonBase}`}

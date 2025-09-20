@@ -41,7 +41,7 @@ const soon = [...soonlyKickableRooms]
             <div className="grid grid-cols-2 gap-4">
             <div className="flex flex-col gap-4">
                 {priority.map((room, i) => (
-                    <MinimalRoomCard key={room.id} room={room} index={i} />
+                    <MinimalRoomCard key={room.number} room={room} index={i} />
                 ))}
 
                 {priority.length === 0 && (
@@ -52,7 +52,7 @@ const soon = [...soonlyKickableRooms]
             </div>
             <div className="flex flex-col gap-4">
                 {soon.map((room, i) => (
-                    <MinimalRoomCard key={room.id} room={room} index={i} />
+                    <MinimalRoomCard key={room.number} room={room} index={i} />
                 ))}
             </div>
             </div>

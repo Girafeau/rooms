@@ -1,7 +1,6 @@
 import type { Use } from "./Use"
 
 export type Room = {
-    id: number
     number: string
     score: number
     floor: number
@@ -23,7 +22,7 @@ export type Room = {
     export type Type = 
     | "Studio"
     | "Salle"
-    | "Salle de spectacle";
+    | "Salle de concert";
 
     export const types: Type[] = ["Studio", "Salle"]
 

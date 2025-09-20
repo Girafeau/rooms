@@ -41,12 +41,12 @@ export const useRoomsStore = create<RoomsStore>((set, get) => ({
 
     const usesByRoom: Record<number, Use> = {}
     ;(lastUses ?? []).forEach((u) => {
-      if (u && typeof u.room_id === "number") usesByRoom[u.room_id] = u
+      if (u) usesByRoom[u.room_number] = u
     })
 
     const now = new Date()
     const withStatus: RoomWithStatus[] = roomsData.map((room) => {
-      const lastUse = usesByRoom[room.id] ?? null
+      const lastUse = usesByRoom[room.number] ?? null
       const status = computeRoomStatus(lastUse, now)
       const timeRemaining = computeTimeRemaining(lastUse)
       return { ...room, status, lastUse, timeRemaining }

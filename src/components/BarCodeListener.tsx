@@ -45,7 +45,7 @@ export function BarCodeListener({ priorityRooms, defaultDuration = 120 }: Props)
 
           // Ajouter la nouvelle utilisation
           const { error: insertError } = await supabase.from("uses").insert({
-            room_id: firstRoom.id,
+            room_number: firstRoom.number,
             user_full_name: scannedText,
             entry_time: new Date().toISOString(),
             max_duration: defaultDuration,

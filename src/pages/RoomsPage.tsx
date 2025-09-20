@@ -39,14 +39,16 @@ export default function RoomsPage() {
                       {floor}{floor === 1 ? " er".toLocaleUpperCase() : " ème".toLocaleUpperCase()}
                     </h2>
                     <p className="text-sm font-semibold">{"étage".toLocaleUpperCase()}</p>
-                  </div> : <h2 className="text-l font-semibold">
+                  </div> : floor < 0 ? <h2 className="text-l font-semibold">
                     {"sous-sol".toUpperCase()}
+                  </h2> : <h2 className="text-l font-semibold">
+                    {"rez-de-chaussée".toUpperCase()}
                   </h2>
                 }
               </div>
             </div>
             {groupedByFloorFiltered[floor].sort((a, b) => (Number(a.number) || 0) - (Number(b.number) || 0)).map((room) => (
-              <RoomCard key={room.id} room={room} />
+              <RoomCard key={room.number} room={room} />
             ))}
           </div>
         </div>
