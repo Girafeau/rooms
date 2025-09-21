@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react"
 import type { RoomWithStatus } from "../types/Room"
 import { supabase } from "../lib/supabase"
-import { Check, X, Plus, Minus } from "lucide-react"
+import { Check, X, Plus, UserPlus, UserPen, UserMinus } from "lucide-react"
 import { ScoreBar } from "./ScoreBar"
 import { useSettingsStore } from "../store/useSettingsStore"
 import formatHHMM from "../utils/format"
@@ -33,6 +33,7 @@ export function RoomCard({ room }: Props) {
     const inputRef = useRef<HTMLInputElement>(null)
     const { showScores } = useSettingsStore()
     const [showForm, setShowForm] = useState(false)
+    const [showTeachers, setShowTeachers] = useState(false)
     const [replacing, setReplacing] = useState(false) // nouvel état pour remplacement
     const [personName, setPersonName] = useState("")
     const [duration, setDuration] = useState(120) // minutes par défaut
@@ -45,7 +46,7 @@ export function RoomCard({ room }: Props) {
     }, [showForm])
 
     const handleAddUse = async () => {
-        if (!personName || duration <= 0) return
+        if (!personName) return
         setLoading(true)
 
         // si on remplace, on termine l'utilisation actuelle avant
@@ -101,20 +102,101 @@ export function RoomCard({ room }: Props) {
         setShowForm(true)
     }
 
+    const handleAddMoreDuration = async () => {
+        if (!room.lastUse) return
+        setLoading(true)
+
+        const { error } = await supabase
+            .from("uses")
+            .update({ max_duration: (room.lastUse.max_duration || 0) + 120 }) // ajouter 2h
+            .eq("id", room.lastUse.id)
+
+        if (error) console.error(error)
+
+        setLoading(false)
+    }
+
+    const handleAddTeacher = async (full_name: string) => {
+        setLoading(true)
+
+        // si on remplace, on termine l'utilisation actuelle avant
+        if (replacing && room.lastUse) {
+            const { error: exitError } = await supabase
+                .from("uses")
+                .update({ exit_time: new Date().toISOString() })
+                .eq("id", room.lastUse.id)
+
+            if (exitError) console.error(exitError)
+
+        }
+
+        const { error } = await supabase.from("uses").insert({
+            room_number: room.number,
+            user_full_name: full_name,
+            entry_time: new Date().toISOString(),
+            max_duration: 0,
+            exit_time: null
+        })
+
+        if (!error) {
+            setPersonName("")
+            setDuration(120)
+            setShowForm(false)
+            setReplacing(false)
+            setShowTeachers(false)
+        } else {
+            console.error(error)
+        }
+
+
+        setLoading(false)
+    }
+
     return (
         <div className="flex flex-col gap-2">
-            <div className={`p-4 flex flex-col transition ${colors[room.status]}`}>
-                <div className="flex justify-between items-center">
-                    <h3 className={`text-lg font-bold mr-4`}>{room.number}</h3>
+            <div className="">
+                <div className={`p-4 flex flex-col transition ${room.teachers.length > 0 && "cursor-pointer"}  ${colors[room.status]}`} onClick={() => setShowTeachers(!showTeachers)} >
+                    <div className="flex justify-between items-center">
+                        <div className="flex items-center">
+                            <h3 className={`text-lg font-bold mr-4`}>{room.number}</h3>
+                           
+                        </div>
+                        <span className={`text-sm font-semibold truncate cursor-default ${darkColors[room.status]}`}>{room.type.toUpperCase()}</span>
 
-                    <span className={`text-sm font-semibold truncate cursor-default ${darkColors[room.status]}`}>{room.type.toUpperCase()}</span>
+                    </div>
 
                 </div>
 
+                {room.hidden_description && (
+                    <div className={`p-4 ${lightColors[room.status]} flex flex-col`}>
+                        <p className="text-sm">{room.hidden_description}</p>
+                    </div>
+                )}
             </div>
-            {room.hidden_description && (
-                <div className={`p-4 ${lightColors[room.status]} flex flex-col`}>
-                    <p className="text-sm">{room.hidden_description}</p>
+
+            {room.teachers.length > 0 && showTeachers && (
+                <div className="flex flex-col gap-1">
+                    {room.teachers.map((teacher) => (
+                        <div key={teacher.id} className="flex justify-between items-center">
+                            <span className={`text-sm ${(room.status === 0 || room.status === 2) && room.lastUse && room.lastUse.user_full_name === teacher.full_name && darkColors[room.status]}`} key={teacher.id}>{teacher.full_name.toUpperCase()}</span>
+                            {(room.status === 0 || room.status === 2) && room.lastUse && room.lastUse.user_full_name === teacher.full_name ? (
+                                <button
+                                    className={`${buttonBase} !w-auto rounded-none`}
+                                    onClick={handleExit}
+                                    disabled={loading}
+                                >
+                                    <UserMinus className="w-5 h-5 stroke-1" />
+                                </button>
+                            ) : <button
+                                className={`${buttonBase} !w-auto rounded-none`}
+                                onClick={() => handleAddTeacher(teacher.full_name)}
+                                disabled={loading}
+                            >
+                                <UserPlus className="w-5 h-5 stroke-1" />
+                            </button>}
+                        </div>
+
+                    ))}
                 </div>
             )}
 
@@ -128,7 +210,7 @@ export function RoomCard({ room }: Props) {
             {(room.status === 0 || room.status === 2) && room.lastUse && (
                 <div className="flex flex-col">
                     <div className={`p-4 ${lightColors[room.status]} flex flex-col`}>
-                        <p className="font-semibold">{room.lastUse.user_full_name}</p>
+                        <p className="font-semibold">{room.lastUse.user_full_name.toUpperCase()}</p>
                         <div className="flex justify-between">
                             <p>
                                 {new Date(room.lastUse.entry_time).toLocaleDateString("fr-FR", {
@@ -138,7 +220,7 @@ export function RoomCard({ room }: Props) {
                                     minute: "2-digit"
                                 }).replace(",", "")}
                             </p>
-                            {room.timeRemaining && <p>{formatHHMM(room.timeRemaining)}</p>}
+                            {room.timeRemaining && room.lastUse.max_duration > 0 && <p>{formatHHMM(room.timeRemaining)}</p>}
                         </div>
 
                     </div>
@@ -148,11 +230,18 @@ export function RoomCard({ room }: Props) {
                             onClick={handleExit}
                             disabled={loading}
                         >
-                            <Minus className="w-5 h-5 stroke-1" />
+                            <UserMinus className="w-5 h-5 stroke-1" />
                         </button>
                         <button
                             className={`${buttonBase}`}
                             onClick={handlePrepareReplace}
+                            disabled={loading}
+                        >
+                            <UserPen className="w-5 h-5 stroke-1" />
+                        </button>
+                        <button
+                            className={`${buttonBase}`}
+                            onClick={handleAddMoreDuration}
                             disabled={loading}
                         >
                             <Plus className="w-5 h-5 stroke-1" />
@@ -168,7 +257,7 @@ export function RoomCard({ room }: Props) {
                     className={`${buttonBase}`}
                     onClick={() => setShowForm(true)}
                 >
-                    <Plus className="w-5 h-5 stroke-1" />
+                    <UserPlus className="w-5 h-5 stroke-1" />
                 </button>
             )}
 
@@ -181,25 +270,40 @@ export function RoomCard({ room }: Props) {
                     }}
                 >
                     <hr className="border-dark-grey"></hr>
-                    <input
-                        ref={inputRef}
-                        type="text"
-                        placeholder="Nom et prénom"
-                        className={`${inputBase}`}
-                        value={personName}
-                        onChange={(e) => setPersonName(e.target.value.toUpperCase())}
-                    />
+                    <div className="flex flex-col gap-1">
+                        <p className="text-sm">Code barre</p>
+                        <input
+                            ref={inputRef}
+                            type="text"
+                            placeholder=""
+                            className={`${inputBase} text-sm`}
 
-                    <input
-                        type="number"
-                        placeholder="Durée (min)"
-                        className={`${inputBase}`}
-                        value={duration}
-                        onChange={(e) => setDuration(Number(e.target.value))}
-                    />
-
+                        />
+                    </div>
+                    <div className="flex flex-col gap-1">
+                        <p className="text-sm">Nom et prénom</p>
+                        <input
+                            type="text"
+                            placeholder=""
+                            className={`${inputBase} text-sm`}
+                            value={personName}
+                            onChange={(e) => setPersonName(e.target.value.toUpperCase())}
+                        />
+                    </div>
+                    <div className="flex flex-col gap-1">
+                        <p className="text-sm">Durée (minutes)</p>
+                        <input
+                            type="number"
+                            placeholder=""
+                            className={`${inputBase} text-sm`}
+                            value={duration}
+                            onChange={(e) => setDuration(Number(e.target.value))}
+                        />
+                    </div>
+                    <hr className="border-dark-grey"></hr>
                     <div className="flex gap-2">
                         <button
+                            type="submit"
                             className={`${buttonBase}`}
                             onClick={handleAddUse}
                             disabled={loading}
@@ -207,11 +311,13 @@ export function RoomCard({ room }: Props) {
                             <Check className="w-5 h-5 stroke-1" />
                         </button>
                         <button
+                        type="button"
                             className={`${buttonBase}`}
-                            onClick={() => { setShowForm(false); setReplacing(false) }}
+                            onClick={() => {setShowForm(false); setReplacing(false) }}
                         >
                             <X className="w-5 h-5 stroke-1" />
                         </button>
+                        
                     </div>
                 </form>
 

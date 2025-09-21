@@ -12,12 +12,20 @@ interface RoomsStore {
 
 function computeRoomStatus(use: Use | null, now: Date = new Date()): number {
   if (!use || !use.entry_time) return 1 // libre
+
   const entry = new Date(use.entry_time)
+
+  // si max_duration = 0 → toujours occupée tant qu'il n'y a pas de exit_time
+  if (use.max_duration === 0 && !use.exit_time) {
+    return 0 // occupée
+  }
+
   const endTime = new Date(entry.getTime() + (use.max_duration ?? 0) * 60 * 1000)
 
-  if (use.exit_time && new Date(use.exit_time) < now) return 1
+  if (use.exit_time && new Date(use.exit_time) < now) return 1 // libre si sortie faite
   if (now >= endTime && !use.exit_time) return 2 // délogeable
   if (now < endTime && !use.exit_time) return 0 // occupée
+
   return 1
 }
 
@@ -32,23 +40,25 @@ let supabaseChannel: ReturnType<typeof supabase.channel> | null = null
 
 export const useRoomsStore = create<RoomsStore>((set, get) => ({
   rooms: [],
-  groupedByFloor: {},
-
   fetchRooms: async () => {
-    const { data: roomsData } = await supabase.from("rooms").select("*")
+    const { data: roomsData } = await supabase
+  .from("rooms_with_teachers")
+  .select("*")
+
     const { data: lastUses } = await supabase.from("last_uses").select("*")
     if (!roomsData) return
 
     const usesByRoom: Record<number, Use> = {}
-    ;(lastUses ?? []).forEach((u) => {
-      if (u) usesByRoom[u.room_number] = u
-    })
+      ; (lastUses ?? []).forEach((u) => {
+        if (u) usesByRoom[u.room_number] = u
+      })
 
     const now = new Date()
     const withStatus: RoomWithStatus[] = roomsData.map((room) => {
       const lastUse = usesByRoom[room.number] ?? null
       const status = computeRoomStatus(lastUse, now)
       const timeRemaining = computeTimeRemaining(lastUse)
+  
       return { ...room, status, lastUse, timeRemaining }
     })
 
@@ -81,6 +91,7 @@ export const useRoomsStore = create<RoomsStore>((set, get) => ({
             if (
               timeRemaining !== null &&
               timeRemaining <= 0 &&
+              room.lastUse.max_duration !== 0 &&
               status !== 2 &&
               !room.lastUse.kickable_activation_time
             ) {

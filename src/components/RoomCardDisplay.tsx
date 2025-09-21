@@ -26,24 +26,19 @@ const lightColors: Record<RoomWithStatus["status"], string> = {
 
 export function RoomCardDisplay({ room }: Props) {
    
-
     return (
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col">
             <div className={`p-4 flex flex-col transition ${colors[room.status]}`}>
-                <div className="flex justify-between items-center">
-                <h3 className={`text-lg font-bold mr-4`}>{room.number}</h3>
-                {room.name && (
-                    <span className={`text-sm font-semibold truncate cursor-default ${darkColors[room.status]}`}>{room.name.toUpperCase()}</span>
-                )}
+                 <div className="flex justify-between items-center">
+                    <h3 className={`text-lg font-bold mr-4`}>{room.number}</h3>
+
+                    <span className={`text-sm font-semibold truncate cursor-default ${darkColors[room.status]}`}>{room.reserved?.toUpperCase()}</span>
+
                 </div>
 
                 
             </div>
-            {room.description && (
-                  <div className={`p-4 ${lightColors[room.status]} flex flex-col`}>
-                  <p className="text-sm">{room.description}</p>
-              </div>
-            )}
+           
 
             {(room.status === 0 || room.status === 2) && room.lastUse && (
                 <div className="flex flex-col">

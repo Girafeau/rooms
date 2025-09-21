@@ -1,35 +1,12 @@
 import { RoomCardDisplay } from "../components/RoomCardDisplay"
 import { useRoomsStore } from "../store/useRoomsStore"
 
-function formatDuration(ms: number): string {
-    if (ms <= 0) return "bientôt"
-    const totalSeconds = Math.floor(ms / 1000)
-    const hours = Math.floor(totalSeconds / 3600)
-    const minutes = Math.floor((totalSeconds % 3600) / 60)
-    const seconds = totalSeconds % 60
-  
-    return [hours, minutes, seconds]
-      .map((v) => String(v).padStart(2, "0"))
-      .join(":")
-  }
-
 export default function DisplayPage() {
   const { rooms } = useRoomsStore()
 
   // Filtrage par types dans la page
   const filteredRooms = rooms.filter((r) => r.type === "Studio")
-  const availableStudios = filteredRooms.filter(
-    (room) => (room.status === 1 || room.status === 2)
-  )
-
-  const nextAvailableTime =
-  availableStudios.length === 0
-    ? Math.min(
-        ...filteredRooms
-          .filter((r) => r.status === 0 && r.timeRemaining !== null)
-          .map((r) => r.timeRemaining as number)
-      )
-    : null
+ 
 
   // Regrouper par étage pour l'affichage
   const groupedByFloorFiltered = filteredRooms.reduce<Record<number, typeof filteredRooms>>(
@@ -51,19 +28,6 @@ export default function DisplayPage() {
         
       {/* Encadré Studios */}
      
-        {availableStudios.length > 0 ? (
-             <div className="flex p-4 bg-grey text-lg">
-          <p className="">
-            {availableStudios.length} studios disponibles
-          </p>
-        </div>
-        ) : nextAvailableTime !== Infinity && nextAvailableTime && (
-            <div className="flex p-4 bg-grey text-lg">
-          <p className="">
-            Pas de studio disponible. Prochain dans {formatDuration(nextAvailableTime)}.
-          </p>
-        </div>
-        )}
  
       {sortedFloors.map((floor) => (
         <div key={floor}>

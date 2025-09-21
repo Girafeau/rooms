@@ -1,3 +1,4 @@
+import type { Teacher } from "./Teacher"
 import type { Use } from "./Use"
 
 export type Room = {
@@ -12,6 +13,7 @@ export type Room = {
   }
 
   export type Instrument = 
+    | "Danse"
     | "Jazz"
     | "Guitare"
     | "Piano"
@@ -25,7 +27,14 @@ export type Room = {
     | "Salle de concert";
 
     export const types: Type[] = ["Studio", "Salle"]
+    export const statuses: number[] = [0, 1, 2]
+
+   export const statusLabels: Record<string, string> = {
+  "0": "Occupé",
+  "1": "Libre",
+  "2": "Délogeable",
+}
 
 
-  export type RoomWithStatus = Room & { timeRemaining: number | null  ,status: number, lastUse?: Use | null }
+  export type RoomWithStatus = Room & { timeRemaining: number | null , status: number, lastUse?: Use | null, teachers: Teacher[], }
   
