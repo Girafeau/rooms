@@ -9,10 +9,11 @@
     --color-green-light: rgba(85, 217, 64, 0.2);
     --color-red: #FF4548;
     --color-red-light: rgba(255, 69, 72, 0.15);
+    --color-yellow: #FFCC00;
     --color-orange: #FF9900;
     --color-orange-light: rgba(255, 153, 0, 0.15);
     --color-grey: #F5F5F5;
-    --color-grey-transparent: rgba(245, 245, 245, 0.6);
+    --color-grey-transparent: rgba(245, 245, 245, 0.9);
     --color-dark-grey: #E0E0E0;
     --color-blue: #4A6EFF;
     --color-green-dark: #1F920D;

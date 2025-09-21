@@ -10,6 +10,8 @@ import { LoginPage } from "./pages/LoginPage"
 import { Settings } from "./components/Settings"
 import VoiceAssistant from "./components/VoiceAssistant"
 import { useSettingsStore } from "./store/useSettingsStore"
+import Clock from "./components/Clock"
+import OccupancyOverview from "./components/OccupancyOverview"
 
 export const buttonBase = "rounded w-full flex items-center justify-center gap-2 px-4 py-2 transition-colors bg-grey border-1 border-dark-grey hover:bg-dark-grey disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
 export const inputBase = "rounded bg-grey px-4 py-2 w-full border-1 border-dark-grey focus:border-dark-grey focus:outline focus:outline-dark-grey focus:invalid:border-red [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
@@ -23,7 +25,9 @@ function Layout({ children }: { children: React.ReactNode }) {
       {!isDisplay && (
         <header className="flex items-center gap-4 justify-between p-4">
           <Nav />
-          <div className="flex gap-4 fixed top-4 right-4 z-10">
+          <div className="flex items-center gap-4 fixed top-4 right-4 z-10">
+            <Clock/>
+            <OccupancyOverview/>
             {showVoiceAssitant && (
               <VoiceAssistant />)}
             <Settings />
