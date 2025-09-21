@@ -52,7 +52,7 @@ export function RoomCardDisplay({ room }: Props) {
                                     minute: "2-digit"
                                 }).replace(",", "")}
                             </p>
-                            {room.timeRemaining && <p>{formatHHMM(room.timeRemaining)}</p>}
+                             {room.timeRemaining && room.lastUse.max_duration > 0 && <p>{formatHHMM(room.timeRemaining)}</p>}
                         </div>
 
                     </div>
