@@ -52,6 +52,8 @@ export default function ImportUsesFromCsv() {
         const rows = results.data
         const usesToInsert = rows
           .map((row, index) => {
+            console.log(row);
+            
             if (!row["Nom de la salle"] || !row.Emprunteur || !row["Date de début"] || !row["Heure de début"]) {
               setLogs((prev) => [...prev, `⚠️ Ligne ${index + 1} incomplète ignorée.`])
               return null
