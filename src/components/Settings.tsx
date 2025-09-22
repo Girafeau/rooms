@@ -3,6 +3,7 @@ import { Settings as SettingsIcon, X } from "lucide-react"
 import { IconCheckbox } from "./IconCheckbox"
 import { buttonBase } from "../App"
 import ExportUsesButton from "./ExportUsesButton"
+import ImportUsesFromCsv from "./ImportUseFromCsv"
 
 export function Settings() {
   const { showScores, toggleScores, isOpen, toggleOpen, showVoiceAssitant, toggleVoiceAssitant } = useSettingsStore()
@@ -36,6 +37,7 @@ export function Settings() {
           />
          </div>
           <ExportUsesButton/>
+          <ImportUsesFromCsv/>
         </div>
       )}
     </div>

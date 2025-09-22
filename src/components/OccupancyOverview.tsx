@@ -48,7 +48,7 @@ export default function OccupancyOverview() {
   return (
     <div className="flex gap-4">
       {/* Studios */}
-      <div className="flex items-center bg-grey gap-2 p-4">
+      <div className="flex items-center gap-2 p-4">
         <h3 className="text-sm mb-2 text-center">studios : </h3>
       <div className="flex-1 w-40">
         
@@ -60,7 +60,7 @@ export default function OccupancyOverview() {
       </div>
 
       {/* Salles */}
-     <div className="flex items-center bg-grey gap-2 p-4">
+     <div className="flex items-center gap-2 p-4">
         <h3 className="text-sm mb-2 text-center">salles : </h3>
       <div className="flex-1 w-40">
         
