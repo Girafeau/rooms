@@ -49,7 +49,16 @@ export default function ImportUsesFromCsv() {
       header: true,
       skipEmptyLines: true,
       complete: async (results) => {
-        const rows = results.data
+        const rows = results.data.map((row: any) => {
+      const normalized: any = {}
+      Object.keys(row).forEach((key) => {
+        const cleanKey = key.replace(/\uFEFF/g, "").trim()
+        normalized[cleanKey] = row[key]?.toString().trim() || ""
+      })
+      return normalized as CsvRow
+    })
+
+    console.log("Colonnes détectées:", Object.keys(results.data[0]))
         const usesToInsert = rows
           .map((row, index) => {
             console.log(row);
