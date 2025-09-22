@@ -4,33 +4,40 @@ import { supabase } from "../lib/supabase"
 import { inputBase } from "../App"
 
 interface CsvRow {
-  "Nom de la salle": string
-  Emprunteur: string
-  "Date de début": string // ex: "2025-09-22" ou "22/09/2025"
-  "Heure de début": string // ex: "14:30"
-  "Heure de fin"?: string // ex: "16:00"
+  "Nom de la salle"?: string
+  Emprunteur?: string
+  "Date de début"?: string
+  "Heure de début"?: string
+  "Heure de fin"?: string
 }
 
 export default function ImportUsesFromCsv() {
   const [loading, setLoading] = useState(false)
   const [logs, setLogs] = useState<string[]>([])
 
-  const parseDateTime = (dateStr: string, timeStr: string): Date => {
-    // Supporte "2025-09-22" ou "22/09/2025"
+  const parseDateTime = (dateStr?: string, timeStr?: string): Date | null => {
+    if (!dateStr || !timeStr) return null
+
     let [day, month, year] = [0, 0, 0]
     if (dateStr.includes("/")) {
       const parts = dateStr.split("/")
+      if (parts.length !== 3) return null
       day = parseInt(parts[0], 10)
       month = parseInt(parts[1], 10) - 1
       year = parseInt(parts[2], 10)
     } else if (dateStr.includes("-")) {
       const parts = dateStr.split("-")
+      if (parts.length !== 3) return null
       year = parseInt(parts[0], 10)
       month = parseInt(parts[1], 10) - 1
       day = parseInt(parts[2], 10)
+    } else {
+      return null
     }
 
     const [hours, minutes] = timeStr.split(":").map((n) => parseInt(n, 10))
+    if (isNaN(hours) || isNaN(minutes)) return null
+
     return new Date(year, month, day, hours, minutes)
   }
 
@@ -43,32 +50,52 @@ export default function ImportUsesFromCsv() {
       skipEmptyLines: true,
       complete: async (results) => {
         const rows = results.data
-        const usesToInsert = rows.map((row) => {
-          // Extraire le numéro de salle (ex: "Salle 204" → "204")
-          const match = row["Nom de la salle"].match(/\d+/)
-          const room_number = match ? match[0] : null
+        const usesToInsert = rows
+          .map((row, index) => {
+            if (!row["Nom de la salle"] || !row.Emprunteur || !row["Date de début"] || !row["Heure de début"]) {
+              setLogs((prev) => [...prev, `⚠️ Ligne ${index + 1} incomplète ignorée.`])
+              return null
+            }
 
-          // Construire entry_time
-          const entryDate = parseDateTime(row["Date de début"], row["Heure de début"])
+            const match = row["Nom de la salle"].match(/\d+/)
+            const room_number = match ? match[0] : null
+            if (!room_number) {
+              setLogs((prev) => [...prev, `⚠️ Ligne ${index + 1}: impossible d’extraire le numéro de salle.`])
+              return null
+            }
 
-          // Calculer max_duration
-          let max_duration = 0
-          if (row["Heure de fin"]) {
-            const endDate = parseDateTime(row["Date de début"], row["Heure de fin"])
-            const diff = (endDate.getTime() - entryDate.getTime()) / 60000 // minutes
-            max_duration = diff > 0 ? Math.round(diff) : 0
-          }
+            const entryDate = parseDateTime(row["Date de début"], row["Heure de début"])
+            if (!entryDate) {
+              setLogs((prev) => [...prev, `⚠️ Ligne ${index + 1}: date/heure invalide.`])
+              return null
+            }
 
-          return {
-            room_number,
-            user_full_name: row.Emprunteur,
-            entry_time: entryDate.toISOString(),
-            exit_time: null,
-            max_duration,
-          }
-        })
+            let max_duration = 0
+            if (row["Heure de fin"]) {
+              const endDate = parseDateTime(row["Date de début"], row["Heure de fin"])
+              if (endDate) {
+                const diff = (endDate.getTime() - entryDate.getTime()) / 60000
+                max_duration = diff > 0 ? Math.round(diff) : 0
+              }
+            }
 
-        // Insérer en BDD
+            return {
+              room_number,
+              user_full_name: row.Emprunteur,
+              entry_time: entryDate.toISOString(),
+              exit_time: null,
+              max_duration,
+            }
+          })
+          .filter(Boolean) // enlever les null
+          .map((u) => u!)
+
+        if (usesToInsert.length === 0) {
+          setLogs((prev) => [...prev, "❌ Aucun use valide à insérer."])
+          setLoading(false)
+          return
+        }
+
         const { error } = await supabase.from("uses").insert(usesToInsert)
         if (error) {
           console.error(error)
@@ -89,9 +116,9 @@ export default function ImportUsesFromCsv() {
         accept=".csv"
         onChange={(e) => e.target.files && handleFile(e.target.files[0])}
         disabled={loading}
-         className={`${inputBase} text-sm`}
+        className={`${inputBase} text-sm`}
       />
-      {loading && <p>Lecture en cours.</p>}
+      {loading && <p>⏳ Import en cours...</p>}
       <div className="text-sm">
         {logs.map((line, i) => (
           <p key={i}>{line}</p>
