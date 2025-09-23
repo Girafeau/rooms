@@ -1,92 +1,143 @@
-import { useState } from "react";
-import { supabase } from "../lib/supabase";
-import Papa from "papaparse";
+import { useState } from "react"
+import Papa from "papaparse"
+import { supabase } from "../lib/supabase"
+import { inputBase } from "../App"
 
-export default function CSVUploader() {
-  const [logs, setLogs] = useState<string[]>([]);
+interface CsvRow {
+  "Nom de la salle"?: string
+  Emprunteur?: string
+  "Date de début"?: string
+  "Heure de début"?: string
+  "Heure de fin"?: string
+}
 
-  const handleFile = (file: File) => {
-    Papa.parse(file, {
+export default function ImportUsesFromCsv() {
+  const [loading, setLoading] = useState(false)
+  const [logs, setLogs] = useState<string[]>([])
+
+  const parseDateTime = (dateStr?: string, timeStr?: string): Date | null => {
+    if (!dateStr || !timeStr) return null
+
+    let [day, month, year] = [0, 0, 0]
+    if (dateStr.includes("/")) {
+      const parts = dateStr.split("/")
+      if (parts.length !== 3) return null
+      day = parseInt(parts[0], 10)
+      month = parseInt(parts[1], 10) - 1
+      year = parseInt(parts[2], 10)
+    } else if (dateStr.includes("-")) {
+      const parts = dateStr.split("-")
+      if (parts.length !== 3) return null
+      year = parseInt(parts[0], 10)
+      month = parseInt(parts[1], 10) - 1
+      day = parseInt(parts[2], 10)
+    } else {
+      return null
+    }
+
+    const [hours, minutes] = timeStr.split(":").map((n) => parseInt(n, 10))
+    if (isNaN(hours) || isNaN(minutes)) return null
+
+    return new Date(year, month, day, hours, minutes)
+  }
+
+  const handleParse = async (file: File, delimiter: string | null = null) => {
+    Papa.parse<CsvRow>(file, {
       header: true,
       skipEmptyLines: true,
+      delimiter: delimiter ?? "", // auto-détection si null ou ""
       complete: async (results) => {
-        const rows = results.data as Record<string, string>[];
-        for (const row of rows) {
-          try {
-            const roomName = row["Nom de la salle"];
-            const user_full_name = row["Emprunteur"];
-            const startDate = row["Date de début"];
-            const startTime = row["Heure de début"];
-            const endTime = row["Heure de fin"];
+        const rows = results.data
+        const columns = results.meta.fields || []
 
-            // Vérification minimale
-            if (!roomName || !user_full_name || !startDate || !startTime) {
-              setLogs((prev) => [...prev, `Ignoré: ligne incomplète`]);
-              continue;
-            }
+        // 🔎 log des colonnes détectées
+        setLogs((prev) => [...prev, `📑 Colonnes détectées: ${columns.join(", ")}`])
 
-            // Récupérer juste le numéro de la salle
-            const match = roomName.match(/\d+/);
-            if (!match) {
-              setLogs((prev) => [...prev, `Ignoré: impossible de récupérer le numéro de salle`]);
-              continue;
-            }
-            const room_number = match[0];
-
-            // Parse date en ISO
-            const [day, month, year] = startDate.split(/[\/\-]/).map(Number);
-            const startISO = `${year.toString().padStart(4, "0")}-${month
-              .toString()
-              .padStart(2, "0")}-${day.toString().padStart(2, "0")}`;
-
-            const entry_time = new Date(`${startISO}T${startTime}:00`).toISOString();
-            let exit_time: string | null = null;
-            let max_duration = 0;
-
-            if (endTime && endTime.trim() !== "") {
-              exit_time = new Date(`${startISO}T${endTime}:00`).toISOString();
-              const [h1, m1] = startTime.split(":").map(Number);
-              const [h2, m2] = endTime.split(":").map(Number);
-              max_duration = h2 * 60 + m2 - (h1 * 60 + m1);
-              if (max_duration < 0) max_duration += 24 * 60; // dépasse minuit
-            }
-
-            // Insert en Supabase
-            const { error } = await supabase.from("uses").insert([
-              { room_number, user_full_name, entry_time, exit_time, max_duration },
-            ]);
-            if (error) throw error;
-
-            setLogs((prev) => [
-              ...prev,
-              `✅ ${user_full_name} -> ${room_number} le ${startDate} de ${startTime}${
-                endTime ? ` à ${endTime}` : ""
-              }`,
-            ]);
-          } catch (err) {
-            console.error(err);
-            setLogs((prev) => [...prev, `❌ Erreur lors de l’insertion d’une ligne`]);
-          }
+        // Si on n’a pas trouvé les colonnes attendues et qu’on n’a pas encore essayé avec ","
+        if (columns.length <= 1 && delimiter !== ",") {
+          setLogs((prev) => [...prev, "⚠️ Peu de colonnes détectées, tentative avec ','..."])
+          return handleParse(file, ",")
         }
+
+        const usesToInsert = rows
+          .map((row, index) => {
+            if (!row["Nom de la salle"] || !row.Emprunteur || !row["Date de début"] || !row["Heure de début"]) {
+              setLogs((prev) => [...prev, `⚠️ Ligne ${index + 1} incomplète ignorée.`])
+              return null
+            }
+
+            const match = row["Nom de la salle"].match(/\d+/)
+            const room_number = match ? match[0] : null
+            if (!room_number) {
+              setLogs((prev) => [...prev, `⚠️ Ligne ${index + 1}: impossible d’extraire le numéro de salle.`])
+              return null
+            }
+
+            const entryDate = parseDateTime(row["Date de début"], row["Heure de début"])
+            if (!entryDate) {
+              setLogs((prev) => [...prev, `⚠️ Ligne ${index + 1}: date/heure invalide.`])
+              return null
+            }
+
+            let max_duration = 0
+            if (row["Heure de fin"]) {
+              const endDate = parseDateTime(row["Date de début"], row["Heure de fin"])
+              if (endDate) {
+                const diff = (endDate.getTime() - entryDate.getTime()) / 60000
+                max_duration = diff > 0 ? Math.round(diff) : 0
+              }
+            }
+
+            return {
+              room_number,
+              user_full_name: row.Emprunteur,
+              entry_time: entryDate.toISOString(),
+              exit_time: null,
+              max_duration,
+            }
+          })
+          .filter(Boolean) as any[]
+
+        if (usesToInsert.length === 0) {
+          setLogs((prev) => [...prev, "❌ Aucun use valide à insérer."])
+          setLoading(false)
+          return
+        }
+
+        const { error } = await supabase.from("uses").insert(usesToInsert)
+        if (error) {
+          console.error(error)
+          setLogs((prev) => [...prev, `❌ Erreur : ${error.message}`])
+        } else {
+          setLogs((prev) => [...prev, `✅ ${usesToInsert.length} uses importés avec succès.`])
+        }
+
+        setLoading(false)
       },
-    });
-  };
+    })
+  }
+
+  const handleFile = async (file: File) => {
+    setLoading(true)
+    setLogs([])
+    await handleParse(file, ";") // essaie d'abord en ";"
+  }
 
   return (
-    <div className="flex flex-col gap-2 p-4">
+    <div>
       <input
         type="file"
         accept=".csv"
-        onChange={(e) => {
-          const file = e.target.files?.[0];
-          if (file) handleFile(file);
-        }}
+        onChange={(e) => e.target.files && handleFile(e.target.files[0])}
+        disabled={loading}
+        className={`${inputBase} text-sm`}
       />
-      <div className="border p-2 h-40 overflow-auto text-sm">
-        {logs.map((line, idx) => (
-          <p key={idx}>{line}</p>
+      {loading && <p>⏳ Import en cours...</p>}
+      <div className="text-sm">
+        {logs.map((line, i) => (
+          <p key={i}>{line}</p>
         ))}
       </div>
     </div>
-  );
+  )
 }
