@@ -6,8 +6,8 @@ import { inputBase } from "../App"
 interface CsvRow {
   "Nom de la salle"?: string
   Emprunteur?: string
-  "Date de début"?: string
-  "Heure de début"?: string
+  "Date de debut"?: string
+  "Heure de debut"?: string
   "Heure de fin"?: string
 }
 
@@ -45,15 +45,13 @@ export default function ImportUsesFromCsv() {
     Papa.parse<CsvRow>(file, {
       header: true,
       skipEmptyLines: true,
-      delimiter: delimiter ?? "", // auto-détection si null ou ""
+      delimiter: delimiter ?? "",
       complete: async (results) => {
         const rows = results.data
         const columns = results.meta.fields || []
 
-        // 🔎 log des colonnes détectées
         setLogs((prev) => [...prev, `📑 Colonnes détectées: ${columns.join(", ")}`])
 
-        // Si on n’a pas trouvé les colonnes attendues et qu’on n’a pas encore essayé avec ","
         if (columns.length <= 1 && delimiter !== ",") {
           setLogs((prev) => [...prev, "⚠️ Peu de colonnes détectées, tentative avec ','..."])
           return handleParse(file, ",")
@@ -61,7 +59,7 @@ export default function ImportUsesFromCsv() {
 
         const usesToInsert = rows
           .map((row, index) => {
-            if (!row["Nom de la salle"] || !row.Emprunteur || !row["Date de début"] || !row["Heure de début"]) {
+            if (!row["Nom de la salle"] || !row.Emprunteur || !row["Date de debut"] || !row["Heure de debut"]) {
               setLogs((prev) => [...prev, `⚠️ Ligne ${index + 1} incomplète ignorée.`])
               return null
             }
@@ -73,7 +71,7 @@ export default function ImportUsesFromCsv() {
               return null
             }
 
-            const entryDate = parseDateTime(row["Date de début"], row["Heure de début"])
+            const entryDate = parseDateTime(row["Date de debut"], row["Heure de debut"])
             if (!entryDate) {
               setLogs((prev) => [...prev, `⚠️ Ligne ${index + 1}: date/heure invalide.`])
               return null
@@ -81,7 +79,7 @@ export default function ImportUsesFromCsv() {
 
             let max_duration = 0
             if (row["Heure de fin"]) {
-              const endDate = parseDateTime(row["Date de début"], row["Heure de fin"])
+              const endDate = parseDateTime(row["Date de debut"], row["Heure de fin"])
               if (endDate) {
                 const diff = (endDate.getTime() - entryDate.getTime()) / 60000
                 max_duration = diff > 0 ? Math.round(diff) : 0
@@ -104,12 +102,32 @@ export default function ImportUsesFromCsv() {
           return
         }
 
-        const { error } = await supabase.from("uses").insert(usesToInsert)
-        if (error) {
-          console.error(error)
-          setLogs((prev) => [...prev, `❌ Erreur : ${error.message}`])
-        } else {
-          setLogs((prev) => [...prev, `✅ ${usesToInsert.length} uses importés avec succès.`])
+        try {
+          // 1️⃣ Clôturer tous les uses existants encore ouverts
+          const { error: updateErr } = await supabase
+            .from("uses")
+            .update({ exit_time: new Date().toISOString() })
+            .is("exit_time", null)
+
+          if (updateErr) {
+            setLogs((prev) => [...prev, `❌ Erreur fermeture uses actifs : ${updateErr.message}`])
+            setLoading(false)
+            return
+          }
+
+          setLogs((prev) => [...prev, "🔒 Tous les uses actifs ont été clôturés."])
+
+          // 2️⃣ Insérer les nouveaux
+          const { error: insertErr } = await supabase.from("uses").insert(usesToInsert)
+          if (insertErr) {
+            console.error(insertErr)
+            setLogs((prev) => [...prev, `❌ Erreur : ${insertErr.message}`])
+          } else {
+            setLogs((prev) => [...prev, `✅ ${usesToInsert.length} uses importés avec succès.`])
+          }
+        } catch (err: any) {
+          console.error(err)
+          setLogs((prev) => [...prev, `❌ Exception : ${err.message}`])
         }
 
         setLoading(false)
@@ -120,7 +138,7 @@ export default function ImportUsesFromCsv() {
   const handleFile = async (file: File) => {
     setLoading(true)
     setLogs([])
-    await handleParse(file, ";") // essaie d'abord en ";"
+    await handleParse(file, ";")
   }
 
   return (
