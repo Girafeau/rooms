@@ -64,8 +64,9 @@ export default function ImportUsesFromCsv() {
               return null
             }
 
-            const match = row["Nom de la salle"].match(/\d+/)
-            const room_number = match ? match[0] : null
+            // ✅ Extraire exactement 3 chiffres du champ
+            const match = row["Nom de la salle"].match(/\b(\d{3})\b/)
+            const room_number = match ? match[1] : null
             if (!room_number) {
               setLogs((prev) => [...prev, `⚠️ Ligne ${index + 1}: impossible d’extraire le numéro de salle.`])
               return null
