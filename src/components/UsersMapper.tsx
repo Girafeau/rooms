@@ -1,75 +1,38 @@
 import { useState } from "react"
-import { buttonBase } from "../App"
-
-interface Mapping {
-  eleveId: string
-  personneId: string
-  nomPrenom: string
-}
 
 export default function UsersMapper() {
   const [cookies, setCookies] = useState("")
+  const [url, setUrl] = useState("")
   const [loading, setLoading] = useState(false)
+  const [result, setResult] = useState<any>(null)
   const [error, setError] = useState<string | null>(null)
-  const [mappings, setMappings] = useState<Mapping[]>([])
-  const [lastRequest, setLastRequest] = useState<string | null>(null)
 
-  const fetchEleves = async () => {
+  const handleFetch = async () => {
     setLoading(true)
     setError(null)
-    setMappings([])
+    setResult(null)
 
     try {
-      const baseUrl =
-        "https://www.imuse-grandnancy.fr//eleves/eleve.php?&exercice_scolaire_id=20&tri1=ELEVE_NUMERO-ASC&numl=0&tree_mode=normal&page=1&search="
-
-      setLastRequest(`URL: ${baseUrl}\nCookies: ${cookies}`)
-
-      const res = await fetch(baseUrl, {
-        headers: { Cookie: cookies },
-        credentials: "include",
-      })
-      const html = await res.text()
-
-      // Extraire ELEVE_ID + PERSONNE_NOM_PRENOM
-      const eleves = Array.from(
-        html.matchAll(/"ELEVE_ID":"(\d+)".+?"PERSONNE_NOM_PRENOM":"(.*?)"/gs)
-      ).map((m) => ({
-        eleveId: m[1],
-        nomPrenom: m[2],
-      }))
-
-      const detailUrlBase =
-        "https://www.imuse-grandnancy.fr//eleves/eleve.php?&type_eleves=TOUS&eleves_des_familles=false&exercice_scolaire_id=20&id="
-
-      const results: Mapping[] = []
-      for (const eleve of eleves) {
-        try {
-          const detailUrl = `${detailUrlBase}${eleve.eleveId}&numl=0&first_num=0&search=&page=1&tri1=ELEVE_NUMERO-ASC`
-          setLastRequest(`URL: ${detailUrl}\nCookies: ${cookies}`)
-
-          const detailRes = await fetch(detailUrl, {
-            headers: { Cookie: cookies },
-            credentials: "include",
-          })
-          const detailHtml = await detailRes.text()
-
-          const match = detailHtml.match(
-            /<div id="label_personne_id" value="#(\d+)"[^>]*>#\d+<\/div>/
-          )
-          if (match) {
-            results.push({
-              eleveId: eleve.eleveId,
-              personneId: match[1],
-              nomPrenom: eleve.nomPrenom,
-            })
-          }
-        } catch (err) {
-          console.error("Erreur élève", eleve.eleveId, err)
+      const res = await fetch(
+        "https://<YOUR-PROJECT-REF>.functions.supabase.co/fetch-imuse",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            url,
+            cookies,
+          }),
         }
-      }
+      )
 
-      setMappings(results)
+      const data = await res.json()
+      if (res.ok) {
+        setResult(data)
+      } else {
+        setError(data.error || "Erreur inconnue")
+      }
     } catch (err: any) {
       setError(err.message)
     } finally {
@@ -78,41 +41,39 @@ export default function UsersMapper() {
   }
 
   return (
-    <div className="space-y-4 p-4 border rounded">
-      <h2 className="text-lg font-semibold">Mapper élèves → personne</h2>
+    <div className="flex flex-col gap-4 p-4 border rounded-md max-w-xl">
+      <h2 className="text-lg font-semibold">IMUSE Fetcher</h2>
 
       <input
         type="text"
-        placeholder="Colle ici tes cookies"
+        placeholder="Cookies"
         value={cookies}
         onChange={(e) => setCookies(e.target.value)}
-        className="w-full border p-2 rounded text-sm"
+        className="border rounded p-2 text-sm"
+      />
+
+      <input
+        type="text"
+        placeholder="URL"
+        value={url}
+        onChange={(e) => setUrl(e.target.value)}
+        className="border rounded p-2 text-sm"
       />
 
       <button
-        onClick={fetchEleves}
-        disabled={loading || !cookies}
-         className={`${buttonBase}`}
+        onClick={handleFetch}
+        disabled={loading}
+        className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50"
       >
-        {loading ? "⏳ Chargement..." : "📥 Charger"}
+        {loading ? "Chargement..." : "Charger"}
       </button>
 
-      {lastRequest && (
-        <pre className="text-xs bg-gray-100 p-2 rounded whitespace-pre-wrap">
-          {lastRequest}
+      {error && <p className="text-red-500 text-sm">❌ {error}</p>}
+
+      {result && (
+        <pre className="bg-gray-100 p-2 rounded text-xs max-h-80 overflow-auto">
+          {JSON.stringify(result, null, 2)}
         </pre>
-      )}
-
-      {error && <p className="text-red-600">❌ Erreur : {error}</p>}
-
-      {mappings.length > 0 && (
-        <ul className="text-sm space-y-1">
-          {mappings.map((m) => (
-            <li key={m.eleveId}>
-              {m.nomPrenom} (Élève {m.eleveId}) → Personne {m.personneId}
-            </li>
-          ))}
-        </ul>
       )}
     </div>
   )
