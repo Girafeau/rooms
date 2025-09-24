@@ -38,6 +38,7 @@ export function Settings() {
           />
          </div>
           <ExportUsesButton/>
+          <ImportUsesFromCsv/>
           <UsersMapper/>
         </div>
       )}
