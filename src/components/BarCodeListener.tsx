@@ -1,98 +1,150 @@
-import { useEffect, useState } from "react"
-import type { RoomWithStatus } from "../types/Room"
+import { useEffect, useRef, useState } from "react"
 import { supabase } from "../lib/supabase"
-import { Toast } from "./Toast"
+import { Plus, X } from "lucide-react"
+import { useScanStore } from "../store/useScanStore"
+import { buttonBase, inputBase } from "../App"
 
-type Props = {
-  priorityRooms: RoomWithStatus[]
-  defaultDuration?: number // durée par défaut en minutes
-}
+export default function BarCodeListener() {
+  const { scans, selectedScan, addScan, updateScan, setSelectedScan } = useScanStore()
 
-export function BarCodeListener({ priorityRooms, defaultDuration = 120 }: Props) {
-  const [toastMessage, setToastMessage] = useState<string | null>(null)
-  const [buffer, setBuffer] = useState("")
-  const [, setCodes] = useState<string[]>([])
-  const [loading, setLoading] = useState(false)
+  const [showForm, setShowForm] = useState(false)
+  const [formName, setFormName] = useState("")
+  const [formDuration, setFormDuration] = useState("120")
 
-  const showToast = (personName: string, roomNumber: string) => {
-    setToastMessage(`${personName} scanné à ${new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} et inscrit dans le studio ${roomNumber}.`)
-  }
+  const nameInputRef = useRef<HTMLInputElement | null>(null)
+
+  // 👉 Focus auto quand on ouvre le formulaire
+  useEffect(() => {
+    if (showForm && nameInputRef.current) {
+      nameInputRef.current.focus()
+    }
+  }, [showForm])
 
   useEffect(() => {
-    let timer: NodeJS.Timeout
+    let buffer = ""
+    let timeout: NodeJS.Timeout
 
-    const handleKeyDown = async (e: KeyboardEvent) => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      clearTimeout(timeout)
+      timeout = setTimeout(() => {
+        buffer = ""
+      }, 300)
+
       if (e.key === "Enter") {
-        if (!buffer) return
-        const scannedText = buffer.toUpperCase()
-        setBuffer("")
-        setCodes((prev) => [...prev, scannedText])
-
-        if (priorityRooms.length === 0) return
-        const firstRoom = priorityRooms[0]
-        setLoading(true)
-
-        try {
-          // Si la salle est délogeable, terminer l'ancienne utilisation
-          if (firstRoom.status === 2 && firstRoom.lastUse) {
-            const { error: exitError } = await supabase
-              .from("uses")
-              .update({ exit_time: new Date().toISOString() })
-              .eq("id", firstRoom.lastUse.id)
-
-            if (exitError) console.error("Erreur de sortie :", exitError)
-          }
-
-          // Ajouter la nouvelle utilisation
-          const { error: insertError } = await supabase.from("uses").insert({
-            room_number: firstRoom.number,
-            user_full_name: scannedText,
-            entry_time: new Date().toISOString(),
-            max_duration: defaultDuration,
-            exit_time: null
-          })
-
-          if (insertError) console.error("Erreur ajout :", insertError)
-
-          if (!insertError) {
-            showToast(scannedText, firstRoom.number)
-          }
-
-        } finally {
-          setLoading(false)
+        if (buffer.length > 0) {
+          handleScan(buffer)
+          buffer = ""
         }
-
-        clearTimeout(timer)
-        return
+      } else {
+        if (e.key.length === 1) {
+          buffer += e.key
+        }
       }
-
-      setBuffer((prev) => prev + e.key)
-
-      // vider le buffer si scan trop long
-      clearTimeout(timer)
-      timer = setTimeout(() => setBuffer(""), 100)
     }
 
     window.addEventListener("keydown", handleKeyDown)
     return () => {
       window.removeEventListener("keydown", handleKeyDown)
-      clearTimeout(timer)
+      clearTimeout(timeout)
     }
-  }, [buffer, priorityRooms, defaultDuration])
+  }, [])
+
+  const handleScan = async (code: string) => {
+    const id = `${Date.now()}-${code}`
+    const timestamp = new Date().toISOString()
+
+    addScan({ id, code, timestamp, userFullName: null, userId: null, duration: null })
+
+    const { data, error } = await supabase
+      .from("users")
+      .select("*")
+      .eq("barcode", code)
+      .maybeSingle()
+
+    if (error || !data) {
+      updateScan(id, { userFullName: null })
+    } else {
+      updateScan(id, { userFullName: data.full_name, userId: data.id })
+    }
+  }
+
+  const handleManualSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!formName.trim()) return
+    const id = `${Date.now()}-manual`
+    const timestamp = new Date().toISOString()
+
+    addScan({
+      id,
+      code: "0",
+      timestamp,
+      userFullName: formName.trim(),
+      userId: null,
+      duration: Number(formDuration) || null,
+    })
+
+    setFormName("")
+    setFormDuration("120")
+    setShowForm(false)
+  }
 
   return (
-    <div className="grid grid-cols-2 gap-4">
-      <div className="p-4 bg-grey border-dashed border-1 border-dark-grey flex flex-col">
-        <p className="text-sm">Scannez une carte.</p>
-        {loading && <p className="text-sm text-blue-500">Ajout en cours...</p>}
+    <div className="fixed bottom-4 right-4 w-96 p-4 bg-white border-1 border-dark-grey flex flex-col gap-3 z-50">
+      <div className="flex items-center justify-between">
+        <h2 className="font-semibold text-lg flex items-center gap-2">
+         
+        </h2>
+        <button
+          onClick={() => setShowForm((s) => !s)}
+          className={`${buttonBase}`}
+        >
+          {showForm ? <X className="w-5 h-5 stroke-1" /> : <Plus className="w-5 h-5 stroke-1" />}
+        </button>
       </div>
 
-      <div className="flex">
-        {toastMessage && (
-          <Toast message={toastMessage} onClose={() => setToastMessage(null)} />
-        )}
+      {showForm && (
+        <form onSubmit={handleManualSubmit} className="flex flex-col gap-2">
+          <input
+            ref={nameInputRef}
+            type="text"
+            value={formName.toUpperCase()}
+            onChange={(e) => setFormName(e.target.value)}
+            placeholder="nom et prénom"
+            className={`${inputBase} text-sm`}
+          />
+          <input
+            type="number"
+            value={formDuration}
+            onChange={(e) => setFormDuration(e.target.value)}
+            placeholder="durée (min)"
+            className={`${inputBase} text-sm`}
+          />
+          <button type="submit" className={`${buttonBase}`}>
+            <Plus className="w-5 h-5 stroke-1" />
+          </button>
+        </form>
+      )}
+
+      <div className="flex flex-col gap-2 max-h-60 overflow-auto">
+        {scans.map((scan) => (
+          <div
+            key={scan.id}
+            className={`p-2 border-1 cursor-pointer ${
+              selectedScan?.id === scan.id ? "border-green-dark bg-green-light" : "border-dark-grey"
+            }`}
+            onClick={() => setSelectedScan(scan.id)}
+          >
+           <p className="text-sm">{scan.code}</p>
+            <p className="font-semibold">
+              {scan.userFullName?.toUpperCase() || "❌ Utilisateur introuvable"}
+            </p>
+             <p className="text-sm text-gray-500">
+              {new Date(scan.timestamp).toLocaleTimeString()}
+            </p>
+            
+          </div>
+        ))}
       </div>
     </div>
-
   )
 }

@@ -4,7 +4,6 @@ import { IconCheckbox } from "./IconCheckbox"
 import { buttonBase } from "../App"
 import ExportUsesButton from "./ExportUsesButton"
 import ImportUsesFromCsv from "./ImportUseFromCsv"
-import UsersMapper from "./UsersMapper"
 
 export function Settings() {
   const { showScores, toggleScores, isOpen, toggleOpen, showVoiceAssitant, toggleVoiceAssitant } = useSettingsStore()
@@ -39,7 +38,6 @@ export function Settings() {
          </div>
           <ExportUsesButton/>
           <ImportUsesFromCsv/>
-          <UsersMapper/>
         </div>
       )}
     </div>

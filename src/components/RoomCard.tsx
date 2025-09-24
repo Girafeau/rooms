@@ -1,11 +1,12 @@
-import { useEffect, useRef, useState } from "react"
+import { useState } from "react"
 import type { RoomWithStatus } from "../types/Room"
 import { supabase } from "../lib/supabase"
-import { Check, X, Plus, UserPlus, UserPen, UserMinus } from "lucide-react"
+import { Plus, UserPlus, UserPen, UserMinus } from "lucide-react"
 import { ScoreBar } from "./ScoreBar"
 import { useSettingsStore } from "../store/useSettingsStore"
 import formatHHMM from "../utils/format"
-import { buttonBase, inputBase } from "../App"
+import { buttonBase } from "../App"
+import { useScanStore } from "../store/useScanStore"
 
 type Props = {
     room: RoomWithStatus
@@ -30,23 +31,17 @@ const lightColors: Record<RoomWithStatus["status"], string> = {
 }
 
 export function RoomCard({ room }: Props) {
-    const inputRef = useRef<HTMLInputElement>(null)
+    const { selectedScan } = useScanStore()
     const { showScores } = useSettingsStore()
-    const [showForm, setShowForm] = useState(false)
     const [showTeachers, setShowTeachers] = useState(false)
     const [replacing, setReplacing] = useState(false) // nouvel état pour remplacement
-    const [personName, setPersonName] = useState("")
-    const [duration, setDuration] = useState(120) // minutes par défaut
     const [loading, setLoading] = useState(false)
 
-    useEffect(() => {
-        if (showForm && inputRef.current) {
-            inputRef.current.focus()
-        }
-    }, [showForm])
-
     const handleAddUse = async () => {
-        if (!personName) return
+        if (!selectedScan || !selectedScan.userFullName) {
+            alert("Aucun utilisateur sélectionné")
+            return
+        }
         setLoading(true)
 
         // si on remplace, on termine l'utilisation actuelle avant
@@ -62,16 +57,13 @@ export function RoomCard({ room }: Props) {
 
         const { error } = await supabase.from("uses").insert({
             room_number: room.number,
-            user_full_name: personName,
+            user_full_name: selectedScan.userFullName,
             entry_time: new Date().toISOString(),
-            max_duration: duration,
+            max_duration: selectedScan.duration,
             exit_time: null
         })
 
         if (!error) {
-            setPersonName("")
-            setDuration(120)
-            setShowForm(false)
             setReplacing(false)
         } else {
             console.error(error)
@@ -99,7 +91,7 @@ export function RoomCard({ room }: Props) {
     // bouton + pour remplacer, ouvre le formulaire mais ne termine pas encore
     const handlePrepareReplace = () => {
         setReplacing(true)
-        setShowForm(true)
+        handleAddUse()
     }
 
     const handleAddMoreDuration = async () => {
@@ -139,9 +131,6 @@ export function RoomCard({ room }: Props) {
         })
 
         if (!error) {
-            setPersonName("")
-            setDuration(120)
-            setShowForm(false)
             setReplacing(false)
             setShowTeachers(false)
         } else {
@@ -159,7 +148,7 @@ export function RoomCard({ room }: Props) {
                     <div className="flex justify-between items-center">
                         <div className="flex items-center">
                             <h3 className={`text-lg font-bold mr-4`}>{room.number}</h3>
-                           
+
                         </div>
                         <span className={`text-sm font-semibold truncate cursor-default ${darkColors[room.status]}`}>{room.type.toUpperCase()}</span>
 
@@ -239,89 +228,30 @@ export function RoomCard({ room }: Props) {
                         >
                             <UserPen className="w-5 h-5 stroke-1" />
                         </button>
-                        <button
-                            className={`${buttonBase}`}
-                            onClick={handleAddMoreDuration}
-                            disabled={loading}
-                        >
-                            <Plus className="w-5 h-5 stroke-1" />
-                        </button>
+                        {room.lastUse.max_duration > 0 && (
+                            <button
+                                className={`${buttonBase}`}
+                                onClick={handleAddMoreDuration}
+                                disabled={loading}
+                            >
+                                <Plus className="w-5 h-5 stroke-1" />
+                            </button>
+                        )}
                     </div>
                 </div>
             )}
 
 
 
-            {room.status === 1 && !showForm && (
+            {room.status === 1 && (
                 <button
                     className={`${buttonBase}`}
-                    onClick={() => setShowForm(true)}
+                    onClick={() => handleAddUse()}
                 >
                     <UserPlus className="w-5 h-5 stroke-1" />
                 </button>
             )}
-
-            {showForm && (
-                <form
-                    className="flex flex-col gap-2 w-full"
-                    onSubmit={(e) => {
-                        e.preventDefault()
-                        handleAddUse()
-                    }}
-                >
-                    <hr className="border-dark-grey"></hr>
-                    <div className="flex flex-col gap-1">
-                        <p className="text-sm">Code barre</p>
-                        <input
-                            ref={inputRef}
-                            type="text"
-                            placeholder=""
-                            className={`${inputBase} text-sm`}
-
-                        />
-                    </div>
-                    <div className="flex flex-col gap-1">
-                        <p className="text-sm">Nom et prénom</p>
-                        <input
-                            type="text"
-                            placeholder=""
-                            className={`${inputBase} text-sm`}
-                            value={personName}
-                            onChange={(e) => setPersonName(e.target.value.toUpperCase())}
-                        />
-                    </div>
-                    <div className="flex flex-col gap-1">
-                        <p className="text-sm">Durée (minutes)</p>
-                        <input
-                            type="number"
-                            placeholder=""
-                            className={`${inputBase} text-sm`}
-                            value={duration}
-                            onChange={(e) => setDuration(Number(e.target.value))}
-                        />
-                    </div>
-                    <hr className="border-dark-grey"></hr>
-                    <div className="flex gap-2">
-                        <button
-                            type="submit"
-                            className={`${buttonBase}`}
-                            onClick={handleAddUse}
-                            disabled={loading}
-                        >
-                            <Check className="w-5 h-5 stroke-1" />
-                        </button>
-                        <button
-                        type="button"
-                            className={`${buttonBase}`}
-                            onClick={() => {setShowForm(false); setReplacing(false) }}
-                        >
-                            <X className="w-5 h-5 stroke-1" />
-                        </button>
-                        
-                    </div>
-                </form>
-
-            )}
+                 
         </div>
     )
 }

@@ -1,3 +1,4 @@
+import BarCodeListener from "../components/BarCodeListener"
 import { RoomCard } from "../components/RoomCard"
 import { RoomTypeFilter } from "../components/RoomTypeFilter"
 import { useFilterStore } from "../store/useFilterStore"
@@ -64,6 +65,7 @@ export default function RoomsPage() {
             </div>
           </div>
         ))}
+        <BarCodeListener />
       </div>
     )
   }
@@ -102,6 +104,7 @@ export default function RoomsPage() {
             <RoomCard key={room.number} room={room} />
           ))}
         </div>
+        <BarCodeListener />
       </div>
     )
   }
