@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react"
 import { supabase } from "../lib/supabase"
-import { Check, Plus, ScanBarcode, X } from "lucide-react"
+import { Check, Plus, ScanBarcode, X, ChevronDown, ChevronUp } from "lucide-react"
 import { useScanStore } from "../store/useScanStore"
 import { buttonBase, inputBase } from "../App"
 
@@ -10,6 +10,7 @@ export default function BarCodeListener() {
   const [showForm, setShowForm] = useState(false)
   const [formName, setFormName] = useState("")
   const [formDuration, setFormDuration] = useState("120")
+  const [expanded, setExpanded] = useState(true)
 
   const nameInputRef = useRef<HTMLInputElement | null>(null)
 
@@ -74,7 +75,6 @@ export default function BarCodeListener() {
       .maybeSingle()
 
     if (error || !data) {
-      // utilisateur inconnu
       updateScan(id, { userFullName: null, userId: null })
     } else {
       updateScan(id, { userFullName: data.full_name, userId: data.id })
@@ -104,10 +104,12 @@ export default function BarCodeListener() {
   const handleRegisterUnknown = async (scanId: string, name: string) => {
     if (!name.trim()) return
     try {
-      // Ajout en BDD
       const { data, error } = await supabase
         .from("users")
-        .insert([{ full_name: name.trim().toUpperCase(), barcode: scans.find((s) => s.id === scanId)?.code }])
+        .insert([{ 
+          full_name: name.trim().toUpperCase(), 
+          barcode: scans.find((s) => s.id === scanId)?.code 
+        }])
         .select()
         .single()
 
@@ -120,87 +122,131 @@ export default function BarCodeListener() {
     }
   }
 
+  // 👉 Dernier scan
+  const lastScan = scans[scans.length - 1]
+
   return (
-    <div className="fixed bottom-4 right-4 w-96 p-4 bg-white border-1 border-dark-grey flex flex-col gap-3 z-50">
+    <div className={`fixed bottom-4 right-4 ${
+                 expanded
+                    ? "w-100"
+                    : "w-40"
+                } p-4 bg-white border-1 border-dark-grey flex flex-col gap-3 z-50`}>
+
+      {/* Header avec bouton toggle */}
       <div className="flex items-center justify-between">
-        <h2><ScanBarcode className="w-5 h-5 stroke-1" /></h2>
-
-       
-
+        <h2 className="flex items-center gap-2">
+          <ScanBarcode className="w-5 h-5 stroke-1" />
+        </h2>
+        <button onClick={() => setExpanded((s) => !s)} className={`${buttonBase} !w-auto !p-2`}>
+          {expanded ? <ChevronDown className="w-5 h-5 stroke-1" /> : <ChevronUp className="w-5 h-5 stroke-1" />}
+        </button>
       </div>
- {!showForm && <button
-          onClick={() => setShowForm((s) => !s)}
-          className={`${buttonBase}`}
-        >
-          <Plus className="w-5 h-5 stroke-1" />
-        </button>}
-      {showForm && (
-        <form onSubmit={handleManualSubmit} className="flex flex-col gap-2">
-          <p className="text-sm">Nom et prénom : </p>
-          <input
-            ref={nameInputRef}
-            type="text"
-            value={formName}
-            onChange={(e) => setFormName(e.target.value.toUpperCase())}
-            placeholder="ex : MOLIN PAUL"
-            className={`${inputBase} text-sm`}
-          />
-          <div className="flex gap-2"><button type="submit" className={`${buttonBase}`}>
-            <Check className="w-5 h-5 stroke-1" />
-          </button>
+
+      {/* Mode réduit */}
+      {!expanded && lastScan && (
+        <div className="text-sm">
+          <span>{lastScan.userFullName?.toUpperCase() || "Un utilisateur inconnu"}</span> a été scanné à{" "}
+          {new Date(lastScan.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}.
+        </div>
+      )}
+
+      {/* Mode complet */}
+      {expanded && (
+        <>
+          {!showForm && (
             <button
               onClick={() => setShowForm((s) => !s)}
               className={`${buttonBase}`}
             >
-              <X className="w-5 h-5 stroke-1" />
+              <Plus className="w-5 h-5 stroke-1" />
             </button>
-          </div>
+          )}
 
-        </form>
-      )}
-
-      <div className="flex flex-col gap-2 max-h-60 overflow-auto">
-        {scans.map((scan) => (
-          <div
-            key={scan.id}
-            className={`p-2 border-1 cursor-pointer ${scan.userFullName
-                ? ""
-                : "flex flex-col gap-2 "
-              } ${selectedScan?.id === scan.id
-                ? "border-green-dark bg-green-light"
-                : "border-dark-grey"
-              }`}
-            onClick={() => setSelectedScan(scan.id)}
-          >
-            <p className="text-sm">{scan.code}</p>
-            {scan.userFullName ? (
-              <p className="font-semibold">{scan.userFullName.toUpperCase()}</p>
-            ) : (
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault()
-                  const form = e.target as HTMLFormElement
-                  const input = form.elements.namedItem("name") as HTMLInputElement
-                  handleRegisterUnknown(scan.id, input.value)
-                }}
-                className="flex flex-col gap-2"
-              >
-                <p className="text-sm">Nom et prénom : </p>
-                <input
-                  name="name"
-                  type="text"
-                  placeholder="ex : MOLIN PAUL"
-                  className={`${inputBase} w-full text-sm`}
-                />
+          {showForm && (
+            <form onSubmit={handleManualSubmit} className="flex flex-col gap-2">
+              <p className="text-sm">Nom et prénom : </p>
+              <input
+                ref={nameInputRef}
+                type="text"
+                value={formName}
+                onChange={(e) => setFormName(e.target.value.toUpperCase())}
+                placeholder="ex : MOLIN PAUL"
+                className={`${inputBase} text-sm`}
+              />
+              <div className="flex gap-2">
                 <button type="submit" className={`${buttonBase}`}>
                   <Check className="w-5 h-5 stroke-1" />
                 </button>
-              </form>
-            )}
-            <p className="text-gray-500">{new Date(scan.timestamp).toLocaleTimeString()}</p>
+                <button
+                  onClick={() => setShowForm(false)}
+                  className={`${buttonBase}`}
+                  type="button"
+                >
+                  <X className="w-5 h-5 stroke-1" />
+                </button>
+              </div>
+            </form>
+          )}
+
+          <div className="flex flex-col gap-2 max-h-60 overflow-auto">
+            {scans.map((scan) => (
+              <div
+                key={scan.id}
+                className={`p-2 border-1 border-dark-grey cursor-pointer ${
+                  !scan.userFullName ? "flex flex-col gap-2" : ""
+                } ${
+                  selectedScan?.id === scan.id
+                    ? "border-3 "
+                    : ""
+                }`}
+                onClick={() => setSelectedScan(scan.id)}
+              >
+                <p className="text-sm">{scan.code}</p>
+
+                {scan.userFullName ? (
+                  <p className="font-semibold">{scan.userFullName.toUpperCase()}</p>
+                ) : (
+                  <UnknownUserForm
+                    scanId={scan.id}
+                    onRegister={handleRegisterUnknown}
+                  />
+                )}
+
+                <p className="text-gray-500">
+                  {new Date(scan.timestamp).toLocaleTimeString()}
+                </p>
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
+        </>
+      )}
     </div>
+  )
+}
+
+function UnknownUserForm({ scanId, onRegister }: { scanId: string; onRegister: (id: string, name: string) => void }) {
+  const [name, setName] = useState("")
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!name.trim()) return
+    onRegister(scanId, name)
+    setName("")
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="flex flex-col gap-2">
+      <p className="text-sm">Nom et prénom : </p>
+      <input
+        type="text"
+        value={name}
+        onChange={(e) => setName(e.target.value.toUpperCase())}
+        placeholder="ex : MOLIN PAUL"
+        className={`${inputBase} w-full text-sm`}
+      />
+      <button type="submit" className={`${buttonBase}`}>
+        <Check className="w-5 h-5 stroke-1" />
+      </button>
+    </form>
   )
 }
