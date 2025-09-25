@@ -49,25 +49,17 @@ export default function OccupancyOverview() {
     <div className="flex gap-4">
       {/* Studios */}
       <div className="flex items-center gap-2 p-4">
-        <h3 className="text-sm mb-2 text-center">studios : </h3>
+        <h3 className="text-sm text-center">studios : </h3>
       <div className="flex-1 w-40">
-        
-        <p className="text-sm text-center mb-1">
-          {studioStats.occupied} / {studioStats.total}
-        </p>
-        <ScoreBar rate={studioStats.occupancyRate}/>
+        <ScoreBar rate={studioStats.occupancyRate} occupancy={`${studioStats.occupied} / ${studioStats.total}`}/>
       </div>
       </div>
 
       {/* Salles */}
      <div className="flex items-center gap-2 p-4">
-        <h3 className="text-sm mb-2 text-center">salles : </h3>
+        <h3 className="text-sm text-center">salles : </h3>
       <div className="flex-1 w-40">
-        
-        <p className="text-sm text-center mb-1">
-          {roomStats.occupied} / {roomStats.total}
-        </p>
-        <ScoreBar rate={roomStats.occupancyRate}/>
+        <ScoreBar rate={roomStats.occupancyRate} occupancy={`${roomStats.occupied} / ${roomStats.total}`}/>
       </div>
       </div>
     </div>
@@ -76,9 +68,10 @@ export default function OccupancyOverview() {
 
 type ScoreBarProps = {
     rate: number
+    occupancy: string
   }
 
-function ScoreBar({ rate }: ScoreBarProps) {
+function ScoreBar({ rate, occupancy }: ScoreBarProps) {
     
   
     // couleur selon score
@@ -90,11 +83,11 @@ function ScoreBar({ rate }: ScoreBarProps) {
     return (
         <div className="w-full bg-grey overflow-hidden relative">
         <div
-          className={`${colorClass} p-1  h-full transition-all duration-300 flex items-center justify-center `}
+          className={`${colorClass} p-1  h-full transition-all duration-300 flex `}
           style={{ width: `${rate}%` }}
         >
-          <span className={`${rate < 50 && "ml-5"} text-xs font-semibold`}>
-            {rate}%
+          <span className={`${rate < 50 && ""} l-0 text-xs font-semibold overflow-visible whitespace-nowrap`}>
+            {rate}% ; {occupancy}
           </span>
         </div>
       </div>

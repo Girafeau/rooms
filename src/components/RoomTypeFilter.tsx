@@ -23,7 +23,7 @@ export function RoomTypeFilter() {
           >
             <input
               type="text"
-              placeholder="numéro de salle ; nom et prénom"
+              placeholder="numéro de salle ex : 432"
               className={`${inputBase} text-sm`}
               value={number}
               onChange={(e) => setNumber(e.target.value)}

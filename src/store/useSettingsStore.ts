@@ -12,7 +12,7 @@ type SettingsState = {
 export const useSettingsStore = create<SettingsState>((set) => ({
   showScores: true,
   toggleScores: () => set((state) => ({ showScores: !state.showScores })),
-  showVoiceAssitant: true,
+  showVoiceAssitant: false,
   toggleVoiceAssitant: () => set((state) => ({ showVoiceAssitant: !state.showVoiceAssitant })),
   isOpen: false,
   toggleOpen: () => set((state) => ({ isOpen: !state.isOpen }))

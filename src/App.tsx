@@ -24,7 +24,9 @@ function Layout({ children }: { children: React.ReactNode }) {
     <div>
       {!isDisplay && (
         <header className="flex items-center gap-4 justify-between p-4">
+           {false && (
           <Nav />
+          )}
           <div className="flex items-center gap-4 fixed top-4 right-4 z-10">
             <Clock/>
             <OccupancyOverview/>

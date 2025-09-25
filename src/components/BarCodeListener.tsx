@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react"
 import { supabase } from "../lib/supabase"
-import { Plus, X } from "lucide-react"
+import { Check, Plus, ScanBarcode, X } from "lucide-react"
 import { useScanStore } from "../store/useScanStore"
 import { buttonBase, inputBase } from "../App"
 
@@ -13,18 +13,30 @@ export default function BarCodeListener() {
 
   const nameInputRef = useRef<HTMLInputElement | null>(null)
 
-  // 👉 Focus auto quand on ouvre le formulaire
+  // 👉 Focus auto quand on ouvre le formulaire manuel
   useEffect(() => {
     if (showForm && nameInputRef.current) {
       nameInputRef.current.focus()
     }
   }, [showForm])
 
+  // Gestion du scanner
   useEffect(() => {
     let buffer = ""
     let timeout: NodeJS.Timeout
 
     const handleKeyDown = (e: KeyboardEvent) => {
+      // ✅ Ignorer si focus dans un input/textarea/select
+      const target = e.target as HTMLElement
+      if (
+        target.tagName === "INPUT" ||
+        target.tagName === "TEXTAREA" ||
+        target.tagName === "SELECT" ||
+        target.isContentEditable
+      ) {
+        return
+      }
+
       clearTimeout(timeout)
       timeout = setTimeout(() => {
         buffer = ""
@@ -53,7 +65,7 @@ export default function BarCodeListener() {
     const id = `${Date.now()}-${code}`
     const timestamp = new Date().toISOString()
 
-    addScan({ id, code, timestamp, userFullName: null, userId: null, duration: null })
+    addScan({ id, code, timestamp, userFullName: null, userId: null, duration: 120 })
 
     const { data, error } = await supabase
       .from("users")
@@ -62,7 +74,8 @@ export default function BarCodeListener() {
       .maybeSingle()
 
     if (error || !data) {
-      updateScan(id, { userFullName: null })
+      // utilisateur inconnu
+      updateScan(id, { userFullName: null, userId: null })
     } else {
       updateScan(id, { userFullName: data.full_name, userId: data.id })
     }
@@ -88,40 +101,61 @@ export default function BarCodeListener() {
     setShowForm(false)
   }
 
+  const handleRegisterUnknown = async (scanId: string, name: string) => {
+    if (!name.trim()) return
+    try {
+      // Ajout en BDD
+      const { data, error } = await supabase
+        .from("users")
+        .insert([{ full_name: name.trim().toUpperCase(), barcode: scans.find((s) => s.id === scanId)?.code }])
+        .select()
+        .single()
+
+      if (error) throw error
+      if (data) {
+        updateScan(scanId, { userFullName: data.full_name, userId: data.id })
+      }
+    } catch (err) {
+      console.error("Erreur d'ajout utilisateur:", err)
+    }
+  }
+
   return (
     <div className="fixed bottom-4 right-4 w-96 p-4 bg-white border-1 border-dark-grey flex flex-col gap-3 z-50">
       <div className="flex items-center justify-between">
-        <h2 className="font-semibold text-lg flex items-center gap-2">
-         
-        </h2>
-        <button
+        <h2><ScanBarcode className="w-5 h-5 stroke-1" /></h2>
+
+       
+
+      </div>
+ {!showForm && <button
           onClick={() => setShowForm((s) => !s)}
           className={`${buttonBase}`}
         >
-          {showForm ? <X className="w-5 h-5 stroke-1" /> : <Plus className="w-5 h-5 stroke-1" />}
-        </button>
-      </div>
-
+          <Plus className="w-5 h-5 stroke-1" />
+        </button>}
       {showForm && (
         <form onSubmit={handleManualSubmit} className="flex flex-col gap-2">
+          <p className="text-sm">Nom et prénom : </p>
           <input
             ref={nameInputRef}
             type="text"
-            value={formName.toUpperCase()}
-            onChange={(e) => setFormName(e.target.value)}
-            placeholder="nom et prénom"
+            value={formName}
+            onChange={(e) => setFormName(e.target.value.toUpperCase())}
+            placeholder="ex : MOLIN PAUL"
             className={`${inputBase} text-sm`}
           />
-          <input
-            type="number"
-            value={formDuration}
-            onChange={(e) => setFormDuration(e.target.value)}
-            placeholder="durée (min)"
-            className={`${inputBase} text-sm`}
-          />
-          <button type="submit" className={`${buttonBase}`}>
-            <Plus className="w-5 h-5 stroke-1" />
+          <div className="flex gap-2"><button type="submit" className={`${buttonBase}`}>
+            <Check className="w-5 h-5 stroke-1" />
           </button>
+            <button
+              onClick={() => setShowForm((s) => !s)}
+              className={`${buttonBase}`}
+            >
+              <X className="w-5 h-5 stroke-1" />
+            </button>
+          </div>
+
         </form>
       )}
 
@@ -129,19 +163,41 @@ export default function BarCodeListener() {
         {scans.map((scan) => (
           <div
             key={scan.id}
-            className={`p-2 border-1 cursor-pointer ${
-              selectedScan?.id === scan.id ? "border-green-dark bg-green-light" : "border-dark-grey"
-            }`}
+            className={`p-2 border-1 cursor-pointer ${scan.userFullName
+                ? ""
+                : "flex flex-col gap-2 "
+              } ${selectedScan?.id === scan.id
+                ? "border-green-dark bg-green-light"
+                : "border-dark-grey"
+              }`}
             onClick={() => setSelectedScan(scan.id)}
           >
-           <p className="text-sm">{scan.code}</p>
-            <p className="font-semibold">
-              {scan.userFullName?.toUpperCase() || "❌ Utilisateur introuvable"}
-            </p>
-             <p className="text-sm text-gray-500">
-              {new Date(scan.timestamp).toLocaleTimeString()}
-            </p>
-            
+            <p className="text-sm">{scan.code}</p>
+            {scan.userFullName ? (
+              <p className="font-semibold">{scan.userFullName.toUpperCase()}</p>
+            ) : (
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault()
+                  const form = e.target as HTMLFormElement
+                  const input = form.elements.namedItem("name") as HTMLInputElement
+                  handleRegisterUnknown(scan.id, input.value)
+                }}
+                className="flex flex-col gap-2"
+              >
+                <p className="text-sm">Nom et prénom : </p>
+                <input
+                  name="name"
+                  type="text"
+                  placeholder="ex : MOLIN PAUL"
+                  className={`${inputBase} w-full text-sm`}
+                />
+                <button type="submit" className={`${buttonBase}`}>
+                  <Check className="w-5 h-5 stroke-1" />
+                </button>
+              </form>
+            )}
+            <p className="text-gray-500">{new Date(scan.timestamp).toLocaleTimeString()}</p>
           </div>
         ))}
       </div>
