@@ -122,8 +122,7 @@ export default function BarCodeListener() {
     }
   }
 
-  // 👉 Dernier scan
-  const lastScan = scans[scans.length - 1]
+   const lastScan = scans[0]
 
   return (
     <div className={`fixed bottom-4 right-4 ${
@@ -137,7 +136,7 @@ export default function BarCodeListener() {
         <h2 className="flex items-center gap-2">
           <ScanBarcode className="w-5 h-5 stroke-1" />
         </h2>
-        <button onClick={() => setExpanded((s) => !s)} className={`${buttonBase} !w-auto !p-2`}>
+        <button onClick={() => setExpanded((s) => !s)} className={`${buttonBase} !w-auto p-2`}>
           {expanded ? <ChevronDown className="w-5 h-5 stroke-1" /> : <ChevronUp className="w-5 h-5 stroke-1" />}
         </button>
       </div>
