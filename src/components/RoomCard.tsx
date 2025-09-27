@@ -38,17 +38,52 @@ export function RoomCard({ room }: Props) {
   const [loading, setLoading] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
-    useEffect(() => {
+  useEffect(() => {
     if (!errorMessage) return
-    const timer = setTimeout(() => setErrorMessage(null), 3000)
+    const timer = setTimeout(() => setErrorMessage(null), 4000)
     return () => clearTimeout(timer)
   }, [errorMessage])
+
+  const checkAccessRights = async (userId: number, roomNumber: string) => {
+    const now = new Date().toISOString()
+    const { data, error } = await supabase
+      .from("access_rights")
+      .select("*")
+      .eq("user_id", userId)
+      .eq("room_number", roomNumber)
+      .gt("expires_at", now)
+      .maybeSingle()
+    console.log(data, error);
+
+
+    if (error) {
+      console.error(error)
+      return false
+    }
+    return !!data
+  }
 
   const handleAddUse = async () => {
     if (!selectedScan || !selectedScan.userFullName) {
       setErrorMessage("Pas d'utilisateur scanné.")
       return
     }
+    console.log(room);
+
+    // ✅ Vérification des droits
+    if (room.is_restricted) {
+      if (selectedScan.userId) {
+        const hasAccess = await checkAccessRights(Number(selectedScan.userId), room.number)
+        if (!hasAccess) {
+          setErrorMessage("Accès refusé : pas de droit valide pour cette salle.")
+          return
+        }
+      } else {
+        setErrorMessage("L'utilisateur n'est pas enregistré.")
+        return
+      }
+    }
+
     setErrorMessage(null)
     setLoading(true)
 
@@ -143,14 +178,15 @@ export function RoomCard({ room }: Props) {
     <div className="flex flex-col gap-2">
       <div>
         <div
-          className={`p-4 flex flex-col transition ${
-            room.teachers.length > 0 && "cursor-pointer"
-          }  ${colors[room.status]}`}
+          className={`p-4 flex flex-col transition ${room.teachers.length > 0 && "cursor-pointer"
+            }  ${colors[room.status]}`}
           onClick={() => setShowTeachers(!showTeachers)}
         >
           <div className="flex justify-between items-center">
             <div className="flex items-center">
-              <h3 className={`text-lg font-bold mr-4`}>{room.number}</h3>
+              <h3 className={`text-lg font-bold mr-4`}>
+                {room.number}
+              </h3>
             </div>
             <span
               className={`text-sm font-semibold truncate cursor-default ${darkColors[room.status]}`}
@@ -175,18 +211,17 @@ export function RoomCard({ room }: Props) {
               className="flex justify-between items-center"
             >
               <span
-                className={`text-sm ${
-                  (room.status === 0 || room.status === 2) &&
+                className={`text-sm ${(room.status === 0 || room.status === 2) &&
                   room.lastUse &&
                   room.lastUse.user_full_name === teacher.full_name &&
                   darkColors[room.status]
-                }`}
+                  }`}
               >
                 {teacher.full_name.toUpperCase()}
               </span>
               {(room.status === 0 || room.status === 2) &&
-              room.lastUse &&
-              room.lastUse.user_full_name === teacher.full_name ? (
+                room.lastUse &&
+                room.lastUse.user_full_name === teacher.full_name ? (
                 <button
                   className={`${buttonBase} !w-auto rounded-none`}
                   onClick={handleExit}
@@ -275,7 +310,7 @@ export function RoomCard({ room }: Props) {
           </button>
           {errorMessage && (
             <div className="flex items-center gap-2 p-4 bg-red-light text-sm">
-            <p>{errorMessage}</p>
+              <p>{errorMessage}</p>
             </div>
           )}
         </div>

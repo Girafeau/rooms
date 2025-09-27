@@ -13,7 +13,7 @@ export function Settings() {
     try {
       await supabase.auth.signOut()
       // redirection optionnelle si tu as une page de login
-      window.location.href = "/login"
+      window.location.href = "/connexion"
     } catch (err) {
       console.error("Erreur lors de la déconnexion :", err)
     }

@@ -10,6 +10,7 @@ export type Room = {
     reserved: Instrument | null
     type: Type
     name: string | null
+    is_restricted: boolean
   }
 
   export type Instrument = 
