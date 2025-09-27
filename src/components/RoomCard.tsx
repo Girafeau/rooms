@@ -46,15 +46,16 @@ export function RoomCard({ room }: Props) {
 
   const checkAccessRights = async (userId: number, roomNumber: string) => {
     const now = new Date().toISOString()
-    const { data, error } = await supabase
-      .from("access_rights")
-      .select("*")
-      .eq("user_id", userId)
-      .eq("room_number", roomNumber)
-      .gt("expires_at", now)
-      .maybeSingle()
+     const { data, error } = await supabase
+    .from("access_rights")
+    .select("*")
+    .eq("user_id", userId)
+    .eq("room_number", roomNumber)
+    .or(`expires_at.is.null,expires_at.gt.${now}`)
+    .maybeSingle()
     console.log(data, error);
-
+    
+ 
 
     if (error) {
       console.error(error)
@@ -68,14 +69,13 @@ export function RoomCard({ room }: Props) {
       setErrorMessage("Pas d'utilisateur scanné.")
       return
     }
-    console.log(room);
 
     // ✅ Vérification des droits
     if (room.is_restricted) {
       if (selectedScan.userId) {
         const hasAccess = await checkAccessRights(Number(selectedScan.userId), room.number)
         if (!hasAccess) {
-          setErrorMessage("Accès refusé : pas de droit valide pour cette salle.")
+          setErrorMessage("L'utilisateur n'est pas autorisé.")
           return
         }
       } else {
