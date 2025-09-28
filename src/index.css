@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Borel&family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Borel&family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
 @import "tailwindcss";
 
 @theme {
@@ -12,13 +12,16 @@
     --color-yellow: #FFCC00;
     --color-orange: #FF9900;
     --color-orange-light: rgba(255, 153, 0, 0.15);
-    --color-grey: #F5F5F5;
+    --color-grey: #EFEFEF;
     --color-grey-transparent: rgba(245, 245, 245, 0.9);
+    --color-transparent: transparent;
     --color-dark-grey: #E0E0E0;
+    --color-dark-grey-2: #C1C1C1;
     --color-blue: #4A6EFF;
     --color-green-dark: #1F920D;
     --color-red-dark: #A60000;
     --color-orange-dark: #CE5900;
     --font-sans: "Montserrat", sans-serif;
     --font-display: "Borel", sans-serif;
+    --font-title: "Abril Fatface", cursive;
 }

@@ -44,6 +44,34 @@ export function RoomCard({ room }: Props) {
     return () => clearTimeout(timer)
   }, [errorMessage])
 
+  
+  const checkAccessBans = async (userId: number) => {
+  const now = new Date().toISOString()
+
+  const { data, error } = await supabase
+    .from("bans")
+    .select("*")
+    .eq("user_id", userId)
+    .or(`expires_at.is.null,expires_at.gt.${now}`)
+    .maybeSingle()
+
+  if (error) {
+    console.error("Erreur checkAccessBans:", error)
+    return { banned: false, reason: null, expires_at: null }
+  }
+
+  if (!data) {
+    return { banned: false, reason: null, expires_at: null }
+  }
+
+  return {
+    banned: true,
+    reason: data.reason,
+    expires_at: data.expires_at, // peut être null → ban à vie
+  }
+}
+
+
   const checkAccessRights = async (userId: number, roomNumber: string) => {
     const now = new Date().toISOString()
      const { data, error } = await supabase
@@ -52,11 +80,8 @@ export function RoomCard({ room }: Props) {
     .eq("user_id", userId)
     .eq("room_number", roomNumber)
     .or(`expires_at.is.null,expires_at.gt.${now}`)
-    .maybeSingle()
-    console.log(data, error);
-    
+    .maybeSingle()    
  
-
     if (error) {
       console.error(error)
       return false
@@ -70,6 +95,25 @@ export function RoomCard({ room }: Props) {
       return
     }
 
+    if (selectedScan.userId) {
+      const { banned, reason, expires_at } = await checkAccessBans(Number(selectedScan.userId))
+      if (banned) {
+        setErrorMessage(
+          `L'utilisateur est banni
+                  ${expires_at
+                    ? " jusqu'au " + new Date(expires_at!).toLocaleDateString("fr-FR", {
+                    day: "2-digit",
+                    month: "short",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })
+                  .replace(",", "") + " "
+                    : " à vie "}pour la raison suivante : « ${reason}. »`
+        )
+        return
+      }
+    }
+
     // ✅ Vérification des droits
     if (room.is_restricted) {
       if (selectedScan.userId) {
@@ -79,7 +123,7 @@ export function RoomCard({ room }: Props) {
           return
         }
       } else {
-        setErrorMessage("L'utilisateur n'est pas enregistré.")
+        setErrorMessage("Les droits ne peuvent pas être vérifiés car l'utilisateur n'est pas connu.")
         return
       }
     }
@@ -309,7 +353,7 @@ export function RoomCard({ room }: Props) {
             <UserPlus className="w-5 h-5 stroke-1" />
           </button>
           {errorMessage && (
-            <div className="flex items-center gap-2 p-4 bg-red-light text-sm">
+            <div className="flex items-center gap-2 p-4 text-red bg-red-light text-sm">
               <p>{errorMessage}</p>
             </div>
           )}

@@ -45,42 +45,52 @@ export function LatestUsesPage() {
             <h1 className="text-xl font-bold">Dernières utilisations</h1>
 
             {/* Filtres */}
-            <div className="flex flex-wrap gap-4 items-center">
-                <input
-                    type="text"
-                    placeholder="Rechercher un nom..."
-                    className={`${inputBase}`}
-                    value={searchName}
-                    onChange={(e) => setSearchName(e.target.value)}
-                />
-
-                <input
-                    type="text"
-                    placeholder="Rechercher une salle..."
-                    className={`${inputBase}`}
-                    value={searchRoom}
-                    onChange={(e) => setSearchRoom(e.target.value)}
-                />
-
-                <select
-                    className={`${inputBase}`}
-                    value={period}
-                    onChange={(e) => setPeriod(e.target.value as Period)}
-                >
-                    <option value="today">Aujourd'hui</option>
-                    <option value="yesterday">Hier</option>
-                    <option value="this_week">Cette semaine</option>
-                    <option value="this_month">Ce mois</option>
-                    <option value="all_time">Tout le temps</option>
-                </select>
-
-                <input
-                    type="number"
-                    min={1}
-                    className={`${inputBase}`}
-                    value={limit}
-                    onChange={(e) => setLimit(Number(e.target.value))}
-                />
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div className="flex flex-col gap-2">
+                    <p className="text-sm">Recherche par nom et prénom :</p>
+                    <input
+                        type="text"
+                        placeholder="Rechercher un nom..."
+                        className={`${inputBase}`}
+                        value={searchName}
+                        onChange={(e) => setSearchName(e.target.value)}
+                    />
+                </div>
+               
+                <div className="flex flex-col gap-2">
+                     <p className="text-sm">Recherche par numéro de salle :</p>
+                    <input
+                        type="text"
+                        placeholder="Rechercher une salle..."
+                        className={`${inputBase}`}
+                        value={searchRoom}
+                        onChange={(e) => setSearchRoom(e.target.value)}
+                    />
+                </div>
+                <div className="flex flex-col gap-2">
+                    <p className="text-sm">Période : </p>
+                    <select
+                        className={`${inputBase}  border-r-8 !border-transparent`}
+                        value={period}
+                        onChange={(e) => setPeriod(e.target.value as Period)}
+                    >
+                        <option value="today">Aujourd'hui</option>
+                        <option value="yesterday">Hier</option>
+                        <option value="this_week">Cette semaine</option>
+                        <option value="this_month">Ce mois</option>
+                        <option value="all_time">Tout le temps</option>
+                    </select>
+                </div>
+                <div className="flex flex-col gap-2">
+                    <p className="text-sm">Limite de résultats :</p>
+                    <input
+                        type="number"
+                        min={1}
+                        className={`${inputBase}`}
+                        value={limit}
+                        onChange={(e) => setLimit(Number(e.target.value))}
+                    />
+                </div>
             </div>
 
             {/* Liste */}

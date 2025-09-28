@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState } from "react"
 import { supabase } from "../lib/supabase"
-import { Check, Plus, ScanBarcode, X, ChevronDown, ChevronUp } from "lucide-react"
+import { Check, Plus, X, ChevronDown, ChevronUp } from "lucide-react"
 import { useScanStore } from "../store/useScanStore"
 import { buttonBase, inputBase } from "../App"
+import { IconCheckbox } from "./IconCheckbox"
 
 export default function BarCodeListener() {
-  const { scans, selectedScan, addScan, updateScan, setSelectedScan } = useScanStore()
+  const { scans, selectedScan, addScan, updateScan, setSelectedScan, removeScan } = useScanStore()
 
   const [showForm, setShowForm] = useState(false)
   const [formName, setFormName] = useState("")
@@ -27,7 +28,6 @@ export default function BarCodeListener() {
     let timeout: NodeJS.Timeout
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      // ✅ Ignorer si focus dans un input/textarea/select
       const target = e.target as HTMLElement
       if (
         target.tagName === "INPUT" ||
@@ -122,28 +122,33 @@ export default function BarCodeListener() {
     }
   }
 
-   const lastScan = scans[0]
+  const handleCancelUnknown = (scanId: string) => {
+    removeScan(scanId)
+    if (selectedScan?.id === scanId) {
+      setSelectedScan(null)
+    }
+  }
+
+  const lastScan = scans[0] || null
 
   return (
     <div className={`fixed bottom-4 right-4 ${
-                 expanded
-                    ? "w-100"
-                    : "w-40"
-                } p-4 bg-white border-1 border-dark-grey flex flex-col gap-3 z-50`}>
+      expanded ? "w-100" : "w-auto"
+    } p-4  flex flex-col gap-3 z-50`}>
 
       {/* Header avec bouton toggle */}
       <div className="flex items-center justify-between">
         <h2 className="flex items-center gap-2">
-          <ScanBarcode className="w-5 h-5 stroke-1" />
+          
         </h2>
-        <button onClick={() => setExpanded((s) => !s)} className={`${buttonBase} !w-auto !p-2`}>
+        <button onClick={() => setExpanded((s) => !s)} className={`${buttonBase} !w-auto !p-4`}>
           {expanded ? <ChevronDown className="w-5 h-5 stroke-1" /> : <ChevronUp className="w-5 h-5 stroke-1" />}
         </button>
       </div>
 
       {/* Mode réduit */}
       {!expanded && lastScan && (
-        <div className="text-sm">
+        <div className="text-sm p-4 bg-grey">
           <span>{lastScan.userFullName?.toUpperCase() || "Un utilisateur inconnu"}</span> a été scanné à{" "}
           {new Date(lastScan.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}.
         </div>
@@ -153,18 +158,21 @@ export default function BarCodeListener() {
       {expanded && (
         <>
           {!showForm && (
-            <button
-              onClick={() => setShowForm((s) => !s)}
-              className={`${buttonBase}`}
-            >
-              <Plus className="w-5 h-5 stroke-1" />
-            </button>
+            <div className="flex flex-col gap-2 p-4 border-dashed border-1 border-dark-grey-2 bg-white">
+              <p className="text-sm">Ajoutez manuellement un utilisateur :</p>
+              <button
+                onClick={() => setShowForm((s) => !s)}
+                className={`${buttonBase}`}
+              >
+                <Plus className="w-5 h-5 stroke-1" />
+              </button>
+            </div>
           )}
 
           {showForm && (
-            <form onSubmit={handleManualSubmit} className="flex flex-col gap-2">
-              <p className="text-sm">Nom et prénom : </p>
-              <input
+            <form onSubmit={handleManualSubmit} className="flex flex-col gap-2 p-4 border-dashed border-1 border-dark-grey-2 bg-white">
+            
+              <p className="text-sm">Nom et prénom : </p><input
                 ref={nameInputRef}
                 type="text"
                 value={formName}
@@ -173,12 +181,12 @@ export default function BarCodeListener() {
                 className={`${inputBase} text-sm`}
               />
               <div className="flex gap-2">
-                <button type="submit" className={`${buttonBase}`}>
+                <button type="submit" className={`${buttonBase} text-green-dark !bg-green-light hover:bg-green-light hover:outline-1 hover:outline-green`}>
                   <Check className="w-5 h-5 stroke-1" />
                 </button>
                 <button
                   onClick={() => setShowForm(false)}
-                  className={`${buttonBase}`}
+                  className={`${buttonBase} text-red bg-red-light hover:bg-red-light hover:outline-1 hover:outline-red`}
                   type="button"
                 >
                   <X className="w-5 h-5 stroke-1" />
@@ -187,19 +195,19 @@ export default function BarCodeListener() {
             </form>
           )}
 
-          <div className="flex flex-col gap-2 max-h-60 overflow-auto">
+          <div className="flex flex-col gap-2 p-4 max-h-100 overflow-auto border-dashed border-1 border-dark-grey-2 bg-white">
+            {scans.length > 0 && <p className="text-sm">Liste des scans :</p>}
             {scans.map((scan) => (
               <div
                 key={scan.id}
-                className={`p-2 border-1 border-dark-grey cursor-pointer ${
-                  !scan.userFullName ? "flex flex-col gap-2" : ""
-                } ${
-                  selectedScan?.id === scan.id
-                    ? "border-3 "
-                    : ""
+                className={`p-4 cursor-pointer rounded relative ${
+                  selectedScan?.id === scan.id ? "bg-grey-transparent" : ""
                 }`}
                 onClick={() => setSelectedScan(scan.id)}
               >
+                <div className="absolute top-4 right-4">
+                <IconCheckbox label={""} checked={selectedScan?.id === scan.id}/>
+                </div>
                 <p className="text-sm">{scan.code}</p>
 
                 {scan.userFullName ? (
@@ -208,6 +216,7 @@ export default function BarCodeListener() {
                   <UnknownUserForm
                     scanId={scan.id}
                     onRegister={handleRegisterUnknown}
+                    onCancel={handleCancelUnknown}
                   />
                 )}
 
@@ -223,7 +232,15 @@ export default function BarCodeListener() {
   )
 }
 
-function UnknownUserForm({ scanId, onRegister }: { scanId: string; onRegister: (id: string, name: string) => void }) {
+function UnknownUserForm({
+  scanId,
+  onRegister,
+  onCancel,
+}: {
+  scanId: string
+  onRegister: (id: string, name: string) => void
+  onCancel: (id: string) => void
+}) {
   const [name, setName] = useState("")
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -234,8 +251,9 @@ function UnknownUserForm({ scanId, onRegister }: { scanId: string; onRegister: (
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-2">
-      <p className="text-sm">Nom et prénom : </p>
+    <form onSubmit={handleSubmit} className="flex flex-col gap-2 mt-2 mb-2">
+      <p className="text-sm text-red p-4 bg-red-light">L'utilisateur n'est pas encore connu.</p>
+      <p className="text-sm">Nom et prénom :</p>
       <input
         type="text"
         value={name}
@@ -243,9 +261,14 @@ function UnknownUserForm({ scanId, onRegister }: { scanId: string; onRegister: (
         placeholder="ex : MOLIN PAUL"
         className={`${inputBase} w-full text-sm`}
       />
-      <button type="submit" className={`${buttonBase}`}>
-        <Check className="w-5 h-5 stroke-1" />
-      </button>
+      <div className="flex gap-2">
+        <button type="submit" className={`${buttonBase} text-green-dark !bg-green-light hover:bg-green-light hover:outline-1 hover:outline-green`}>
+          <Check className="w-5 h-5 stroke-1" />
+        </button>
+        <button type="button" onClick={() => onCancel(scanId)} className={`${buttonBase} text-red bg-red-light hover:bg-red-light hover:outline-1 hover:outline-red`}>
+          <X className="w-5 h-5 stroke-1" />
+        </button>
+      </div>
     </form>
   )
 }

@@ -10,9 +10,9 @@ export function RoomTypeFilter() {
   return (
     <div className="flex flex-col gap-2">
 
-      <div className="flex gap-4">
-        <div className="flex flex-col gap-2 w-1/6">
-          <p className="text-sm">Recherche : </p>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="flex flex-col gap-2">
+          <p className="text-sm">Recherche par numéro de salle : </p>
           <form
             className="flex flex-col gap-2"
             onSubmit={(e) => {
@@ -23,7 +23,26 @@ export function RoomTypeFilter() {
           >
             <input
               type="text"
-              placeholder="numéro de salle ex : 432"
+              placeholder="ex : 432"
+              className={`${inputBase} text-sm`}
+              value={number}
+              onChange={(e) => setNumber(e.target.value)}
+            />
+          </form>
+        </div>
+        <div className="flex flex-col gap-2">
+          <p className="text-sm">Recherche par nom et prénom : </p>
+          <form
+            className="flex flex-col gap-2"
+            onSubmit={(e) => {
+              e.preventDefault()
+              toggleNumber(number)
+              setNumber("")
+            }}
+          >
+            <input
+              type="text"
+              placeholder="ex : 432"
               className={`${inputBase} text-sm`}
               value={number}
               onChange={(e) => setNumber(e.target.value)}
@@ -35,13 +54,13 @@ export function RoomTypeFilter() {
           <div className="flex gap-2">
             <div
               onClick={() => setSortMode("floor")}
-              className={`flex items-center cursor-pointer text-sm rounded-full py-2 px-4 ${sortMode === "floor" ? "bg-dark-grey" : "bg-grey"}`}
+              className={`flex items-center cursor-pointer text-sm rounded-full py-3 px-4 ${sortMode === "floor" ? "bg-dark-grey" : "bg-grey"}`}
             >
               tri : étage décroissant
             </div>
             <div
               onClick={() => setSortMode("time")}
-              className={`flex items-center cursor-pointer text-sm rounded-full py-2 px-4 ${sortMode === "time" ? "bg-dark-grey" : "bg-grey"}`}
+              className={`flex items-center cursor-pointer text-sm rounded-full py-3 px-4 ${sortMode === "time" ? "bg-dark-grey" : "bg-grey"}`}
             >
               tri : temps restant
             </div>
@@ -57,7 +76,7 @@ export function RoomTypeFilter() {
                 <div
                   key={type}
                   onClick={() => toggleType(type)}
-                  className={`flex  bg-grey items-center cursor-pointer text-sm rounded-full py-2 px-4
+                  className={`flex  bg-grey items-center cursor-pointer text-sm rounded-full py-3 px-4
               ${isChecked ? " !bg-dark-grey" : ""}
               `}
                 >
@@ -71,7 +90,7 @@ export function RoomTypeFilter() {
                 <div
                   key={status}
                   onClick={() => toggleStatus(status)}
-                  className={`flex  bg-grey items-center cursor-pointer text-sm rounded-full py-2 px-4
+                  className={`flex  bg-grey items-center cursor-pointer text-sm rounded-full py-3 px-4
               ${isChecked ? " !bg-dark-grey" : ""}
               `}
                 >
@@ -82,7 +101,7 @@ export function RoomTypeFilter() {
 
             {filteredRoomsNumber.map((number) => {
               return (
-                <div key={number} className="flex  bg-red-light items-center cursor-pointer text-sm rounded-full py-2 px-4" onClick={() => toggleNumber(number)}><span>numéro : {number}</span>
+                <div key={number} className="flex  bg-red-light items-center cursor-pointer text-sm rounded-full py-3 px-4" onClick={() => toggleNumber(number)}><span>numéro : {number}</span>
                   <X className="w-3 h-3 stroke-2 ml-2" />
                 </div>
               )

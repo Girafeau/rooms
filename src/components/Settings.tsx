@@ -33,7 +33,7 @@ export function Settings() {
 
       {/* Panneau */}
       {isOpen && (
-        <div className="absolute top-20 right-0 p-4 bg-grey-transparent w-100 z-10 flex flex-col gap-3 ">
+        <div className="absolute top-20 right-0 p-4 bg-white w-100 z-10 flex flex-col gap-3 ">
           <div className="flex flex-col gap-1">
             <h3>Paramètres</h3>
             <IconCheckbox
@@ -54,7 +54,7 @@ export function Settings() {
           {/* Bouton Déconnexion */}
           <button
             onClick={handleLogout}
-            className={`${buttonBase} text-sm flex items-center gap-2 justify-center text-red hover:!bg-red-light hover:!border-red`}
+            className={`${buttonBase} text-sm flex items-center gap-2 justify-center text-red bg-red-light hover:bg-red-light hover:outline-1 hover:outline-red`}
           >
             Se déconnecter
           </button>

@@ -1,47 +1,60 @@
-// src/store/useScanStore.ts
 import { create } from "zustand"
 
 export type Scan = {
   id: string
   code: string
   timestamp: string
-  userFullName?: string | null
-  userId?: string | null
-  duration?: number | null
+  userFullName: string | null
+  userId: number | null
+  duration: number | null
 }
 
-interface ScanStore {
+type ScanStore = {
   scans: Scan[]
   selectedScan: Scan | null
   addScan: (scan: Scan) => void
-  updateScan: (id: string, patch: Partial<Scan>) => void
+  updateScan: (id: string, data: Partial<Scan>) => void
   setSelectedScan: (id: string | null) => void
-  clearScans: () => void
+  removeScan: (id: string) => void
+  reset: () => void
 }
 
 export const useScanStore = create<ScanStore>((set, get) => ({
   scans: [],
   selectedScan: null,
+
   addScan: (scan) =>
     set((state) => ({
-      scans: [scan, ...state.scans].slice(0, 100),
-      selectedScan: scan, // le dernier devient sélectionné
+      scans: [scan, ...state.scans], // ajoute en haut de la liste
+      selectedScan: scan,
     })),
-  updateScan: (id, patch) =>
-    set((state) => {
-      const updated = state.scans.map((s) =>
-        s.id === id ? { ...s, ...patch } : s
-      )
-      const sel =
+
+  updateScan: (id, data) =>
+    set((state) => ({
+      scans: state.scans.map((scan) =>
+        scan.id === id ? { ...scan, ...data } : scan
+      ),
+      selectedScan:
         state.selectedScan?.id === id
-          ? { ...state.selectedScan, ...patch }
-          : state.selectedScan
-      return { scans: updated, selectedScan: sel }
-    }),
+          ? { ...state.selectedScan, ...data }
+          : state.selectedScan,
+    })),
+
   setSelectedScan: (id) => {
-    if (!id) return set({ selectedScan: null })
+    if (!id) {
+      set({ selectedScan: null })
+      return
+    }
     const scan = get().scans.find((s) => s.id === id) || null
     set({ selectedScan: scan })
   },
-  clearScans: () => set({ scans: [], selectedScan: null }),
+
+  removeScan: (id) =>
+    set((state) => ({
+      scans: state.scans.filter((scan) => scan.id !== id),
+      selectedScan:
+        state.selectedScan?.id === id ? null : state.selectedScan,
+    })),
+
+  reset: () => set({ scans: [], selectedScan: null }),
 }))

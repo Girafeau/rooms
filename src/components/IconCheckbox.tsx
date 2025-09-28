@@ -28,7 +28,9 @@ export function IconCheckbox({ label, checked: defaultChecked = true, onChange }
       >
         <Check className="w-3 h-3" strokeWidth={2} />
       </div>
+      {label &&
       <span className="text-sm">{label}</span>
+      }
     </button>
   )
 }
