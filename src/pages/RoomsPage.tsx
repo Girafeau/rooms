@@ -1,9 +1,11 @@
+import { ListFilterPlus, ScanBarcode } from "lucide-react"
 import BarCodeListener from "../components/BarCodeListener"
 import { RoomCard } from "../components/RoomCard"
 import { RoomTypeFilter } from "../components/RoomTypeFilter"
 import { Title } from "../components/Title"
 import { useFilterStore } from "../store/useFilterStore"
 import { useRoomsStore } from "../store/useRoomsStore"
+import { buttonBase } from "../App"
 
 export default function RoomsPage() {
   const { rooms } = useRoomsStore()
@@ -53,10 +55,23 @@ export default function RoomsPage() {
       .sort((a, b) => b - a)
 
     return (
-      <div className="flex flex-col gap-4 p-4">
-         <Title subtitle="Liste des studios et salles">
-        Gestion des salles
-      </Title>
+      <div className="flex flex-col gap-4">
+        <Title back={true} button={<div className="flex items-center gap-2">
+          <button
+
+            className={`${buttonBase} !p-4 !w-auto bg-white hover:bg-grey`}
+          >
+            <ListFilterPlus className="w-5 h-5 stroke-1" />
+          </button>
+          <button
+
+            className={`${buttonBase} !p-4 !w-auto bg-white hover:bg-grey`}
+          >
+            <ScanBarcode className="w-5 h-5 stroke-1" />
+          </button>
+        </div>}>
+          Gestion des salles
+        </Title>
         <RoomTypeFilter />
         {sortedFloors.map((floor) => (
           <div key={floor}>

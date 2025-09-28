@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom"
-import { Theater, User, Users, ScrollText, ChartNoAxesCombined, Settings, ScanBarcode, ChevronsLeftRight, ChevronsRightLeft, Unplug, MessageCircleQuestionMark } from "lucide-react"
+import { Theater, User, Users, ScrollText, ChartNoAxesCombined, Settings, ChevronsLeftRight, ChevronsRightLeft, Unplug, MessageCircleQuestionMark } from "lucide-react"
 import { buttonBase } from "../App"
 import { useAuthStore } from "../store/authStore";
 import { supabase } from "../lib/supabase";
@@ -14,10 +14,9 @@ export function Nav({ open, setOpen }: { open: boolean; setOpen: (o: boolean) =>
 
     const links = [
         { path: "/", label: "Gestion des salles", icon: <Theater className="w-5 h-5 stroke-1" /> },
-        { path: "/scans", label: "Gestion des scans", icon: <ScanBarcode className="w-5 h-5 stroke-1" /> },
-        { path: "/utilisations", label: "Liste des entrées et sorties", icon: <ScrollText className="w-5 h-5 stroke-1" /> },
+        { path: "/utilisations", label: "Historique des entrées sorties", icon: <ScrollText className="w-5 h-5 stroke-1" /> },
         { path: "/utilisateurs", label: "Gestion des utilisateurs", icon: <Users className="w-5 h-5 stroke-1" /> },
-        { path: "/statistiques", label: "Statistiques avancées", icon: <ChartNoAxesCombined className="w-5 h-5 stroke-1" /> },
+        { path: "/statistiques", label: "Statistiques", icon: <ChartNoAxesCombined className="w-5 h-5 stroke-1" /> },
 
     ]
 
@@ -49,7 +48,7 @@ export function Nav({ open, setOpen }: { open: boolean; setOpen: (o: boolean) =>
                                 key={link.path}
                                 to={link.path}
                                 className={`
-                flex items-center gap-3 p-4 rounded-xl cursor-pointer
+                flex items-center gap-3 p-4 rounded-xl cursor-pointer overflow-hidden
                 ${active ? "bg-black text-white" : "hover:bg-grey"}
               `}
                             >
@@ -69,7 +68,7 @@ export function Nav({ open, setOpen }: { open: boolean; setOpen: (o: boolean) =>
                                 key={link.path}
                                 to={link.path}
                                 className={`
-                flex items-center gap-3 p-4 rounded-xl cursor-pointer
+                flex items-center gap-3 p-4 rounded-xl cursor-pointer overflow-hidden
                 ${active ? "bg-black text-white" : "hover:bg-grey"}
               `}
                             >
@@ -82,8 +81,9 @@ export function Nav({ open, setOpen }: { open: boolean; setOpen: (o: boolean) =>
                 <hr className="border-grey" />
                 {user && (
                     <div className="flex items-center justify-center gap-3">
-                        <div className="flex items-center justify-center p-4 rounded-full bg-purple-transparent text-purple">
+                        <div className="relative flex items-center justify-center p-4 rounded-full bg-purple-transparent text-purple">
                             <User className="w-5 h-5 stroke-1" />
+                            <div className="absolute w-2 h-2 bg-green top-1 right-1 rounded-full"></div>
                         </div>
                         {open && (
                             <div className="flex flex-col items-center text-sm gap-2">

@@ -9,8 +9,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
     <div className="flex">
       <Nav open={open} setOpen={setOpen} />
       <main
-        className={`transition-all duration-300 flex-1 p-6 ${
-          open ? "ml-76" : "ml-16"
+        className={`transition-all duration-300 flex-1 ${
+          open ? "ml-76" : "ml-21"
         }`}
       >
         {children}

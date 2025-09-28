@@ -2,6 +2,7 @@ import { useEffect, useState } from "react"
 import { supabase } from "../lib/supabase"
 import type { Use } from "../types/Use"
 import { inputBase } from "../App"
+import { Title } from "../components/Title"
 
 type Period = "today" | "yesterday" | "this_week" | "this_month" | "all_time"
 
@@ -41,24 +42,23 @@ export function LatestUsesPage() {
     }, [searchName, searchRoom, period, limit])
 
     return (
-        <div className="p-4 space-y-4">
-            <h1 className="text-xl font-bold">Dernières utilisations</h1>
-
+        <div>
+           <Title back={true} button={undefined}>Gestion des entrées sorties</Title>
             {/* Filtres */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
                 <div className="flex flex-col gap-2">
-                    <p className="text-sm">Recherche par nom et prénom :</p>
+                    <div className="flex gap-2 text-sm"> <span>Recherche par nom</span></div>
                     <input
                         type="text"
                         placeholder="ex : MOLIN PAUL"
-                        className={`${inputBase}`}
+                        className={`${inputBase} text-sm`}
                         value={searchName}
                         onChange={(e) => setSearchName(e.target.value)}
                     />
                 </div>
-               
+
                 <div className="flex flex-col gap-2">
-                     <p className="text-sm">Recherche par numéro de salle :</p>
+                    <div className="flex gap-2 text-sm"> <span>Recherche par numéro de salle</span></div>
                     <input
                         type="text"
                         placeholder="ex : 234"
@@ -68,7 +68,8 @@ export function LatestUsesPage() {
                     />
                 </div>
                 <div className="flex flex-col gap-2">
-                    <p className="text-sm">Période : </p>
+                    <div className="flex gap-2 text-sm"> <span>Période</span></div>
+
                     <select
                         className={`${inputBase}  border-r-8 !border-transparent`}
                         value={period}
@@ -82,7 +83,7 @@ export function LatestUsesPage() {
                     </select>
                 </div>
                 <div className="flex flex-col gap-2">
-                    <p className="text-sm">Limite de résultats :</p>
+                    <div className="flex gap-2 text-sm"> <span>Limite de résultats</span></div>
                     <input
                         type="number"
                         placeholder="ex : 20"
