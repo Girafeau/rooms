@@ -188,7 +188,7 @@ export default function AccessAndBanPage() {
 
     return (
         <div className="p-6 flex flex-col gap-4">
-            <h1 className="text-5xl font-bold font-title mb-8">Gestion des accès <br/> utilisateur.</h1>
+            <h1 className="text-5xl font-bold font-title mb-8">Gestion des utilisateurs.</h1>
 
             {/* Barre de recherche et filtres */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -199,7 +199,7 @@ export default function AccessAndBanPage() {
                         placeholder="ex : BAYER ALINA"
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
-                        className={`${inputBase}`}
+                        className={`${inputBase} text-sm`}
                     />
                 </div>
 
@@ -210,7 +210,7 @@ export default function AccessAndBanPage() {
                         placeholder="ex : 126"
                         value={roomSearch}
                         onChange={(e) => setRoomSearch(e.target.value)}
-                        className={`${inputBase}`}
+                        className={`${inputBase} text-sm`}
                     />
                 </div>
 
@@ -340,7 +340,7 @@ export default function AccessAndBanPage() {
             {/* Formulaires */}
             {showAccessForm && selectedUser && (
                 <Modal title={`Ajouter un accès pour ${selectedUser.full_name}`} onClose={() => setShowAccessForm(false)}>
-                    <p className="text-sm">Numéro de la salle :</p>
+                    <p className="text-sm">Numéro de salle :</p>
                     <input
                         type="text"
                         placeholder="ex : 126"
@@ -390,11 +390,13 @@ export default function AccessAndBanPage() {
                             </option>
                         ))}
                     </select>
+                    <hr className="border-grey mt-4"/>
                     <div className="flex gap-2 justify-end">
-                        <button className={`${buttonBase}`} onClick={handleBanUser} disabled={loading}>
+                        
+                        <button type="submit" className={`${buttonBase} text-green-dark !bg-green-light hover:bg-green-light hover:outline-1 hover:outline-green-dark`} onClick={handleBanUser} disabled={loading}>
                             <Check className="w-5 h-5 stroke-1" />
                         </button>
-                        <button className={`${buttonBase}`} onClick={() => setShowBanForm(false)}>
+                        <button className={`${buttonBase} text-red bg-red-light hover:bg-red-light hover:outline-1 hover:outline-red`} onClick={() => setShowBanForm(false)}>
                             <X className="w-5 h-5 stroke-1" />
                         </button>
                     </div>
@@ -408,7 +410,8 @@ function Modal({ title, children }: { title: string; onClose: () => void; childr
     return (
         <div className="fixed inset-0 bg-grey-transparent flex items-center justify-center z-50">
             <div className="bg-white p-8 w-112 flex flex-col gap-2 border-dashed border-1 border-dark-grey-2">
-                <h2 className="text-lg font-bold">{title}</h2>
+                <h2 className="text-lg">{title}</h2>
+                <hr className="border-grey mb-4"/>
                 {children}
             </div>
         </div>

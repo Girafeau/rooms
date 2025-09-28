@@ -17,7 +17,7 @@ export default function Clock() {
   }
 
   return (
-    <div className="text-2xl font-semi-bold">
+    <div className="text-lg font-semi-bold items-center justify-center">
       {formatTime(time)}
     </div>
   )

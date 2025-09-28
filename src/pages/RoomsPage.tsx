@@ -1,23 +1,40 @@
 import BarCodeListener from "../components/BarCodeListener"
 import { RoomCard } from "../components/RoomCard"
 import { RoomTypeFilter } from "../components/RoomTypeFilter"
+import { Title } from "../components/Title"
 import { useFilterStore } from "../store/useFilterStore"
 import { useRoomsStore } from "../store/useRoomsStore"
 
 export default function RoomsPage() {
   const { rooms } = useRoomsStore()
-  const { filteredTypes, filteredRoomsNumber, filteredStatuses, sortMode } = useFilterStore()
+  const { filteredTypes, roomSearch, nameSearch, filteredStatuses, sortMode } = useFilterStore()
 
-  // Filtrage par types
+  // Filtrage
   let filteredRooms = rooms
+
+  // types
   if (filteredTypes.length > 0) {
     filteredRooms = filteredRooms.filter((r) => filteredTypes.includes(r.type))
   }
-  if (filteredRoomsNumber.length > 0) {
-    filteredRooms = filteredRooms.filter((r) => filteredRoomsNumber.includes(r.number))
-  }
+
+  // statut
   if (filteredStatuses.length > 0) {
     filteredRooms = filteredRooms.filter((r) => filteredStatuses.includes(r.status))
+  }
+
+  // recherche par numéro
+  if (roomSearch.trim() !== "") {
+    filteredRooms = filteredRooms.filter((r) =>
+      r.number.toLowerCase().includes(roomSearch.toLowerCase())
+    )
+  }
+
+  // recherche par nom utilisateur
+  if (nameSearch.trim() !== "") {
+    filteredRooms = filteredRooms.filter((r) => {
+      const lastUseUser = (!r.lastUse?.exit_time && r.lastUse?.user_full_name) || ""
+      return lastUseUser.toLowerCase().includes(nameSearch.toLowerCase())
+    })
   }
 
   // 🟦 Mode affichage par étage
@@ -37,6 +54,9 @@ export default function RoomsPage() {
 
     return (
       <div className="flex flex-col gap-4 p-4">
+         <Title subtitle="Liste des studios et salles">
+        Gestion des salles
+      </Title>
         <RoomTypeFilter />
         {sortedFloors.map((floor) => (
           <div key={floor}>
@@ -70,31 +90,31 @@ export default function RoomsPage() {
     )
   }
 
+  // 🟧 Mode affichage par temps
   if (sortMode === "time") {
-  const sortedByTime = [...filteredRooms].sort((a, b) => {
-    const aLast = a.lastUse
-    const bLast = b.lastUse
+    const sortedByTime = [...filteredRooms].sort((a, b) => {
+      const aLast = a.lastUse
+      const bLast = b.lastUse
 
-    // 1️⃣ Aucun lastUse ou exit_time défini → trier par numéro
-    if ((!aLast || aLast.exit_time) && (!bLast || bLast.exit_time)) {
-      return Number(a.number) - Number(b.number)
-    }
-    if (!aLast || aLast.exit_time) return -1
-    if (!bLast || bLast.exit_time) return 1
+      // Aucun lastUse ou exit_time défini → trier par numéro
+      if ((!aLast || aLast.exit_time) && (!bLast || bLast.exit_time)) {
+        return Number(a.number) - Number(b.number)
+      }
+      if (!aLast || aLast.exit_time) return -1
+      if (!bLast || bLast.exit_time) return 1
 
-    // 2️⃣ max_duration = 0 → priorité basse mais trier par numéro
-    if (aLast.max_duration === 0 && bLast.max_duration === 0) {
-      return Number(a.number) - Number(b.number)
-    }
-    if (aLast.max_duration === 0) return 1
-    if (bLast.max_duration === 0) return -1
+      // max_duration = 0 → priorité basse mais trier par numéro
+      if (aLast.max_duration === 0 && bLast.max_duration === 0) {
+        return Number(a.number) - Number(b.number)
+      }
+      if (aLast.max_duration === 0) return 1
+      if (bLast.max_duration === 0) return -1
 
-    // 3️⃣ temps restant
-    const aEnd = new Date(aLast.entry_time).getTime() + aLast.max_duration * 60000
-    const bEnd = new Date(bLast.entry_time).getTime() + bLast.max_duration * 60000
-    return aEnd - bEnd
-  })
-
+      // temps restant
+      const aEnd = new Date(aLast.entry_time).getTime() + aLast.max_duration * 60000
+      const bEnd = new Date(bLast.entry_time).getTime() + bLast.max_duration * 60000
+      return aEnd - bEnd
+    })
 
     return (
       <div className="flex flex-col gap-4 p-4">
@@ -108,5 +128,6 @@ export default function RoomsPage() {
       </div>
     )
   }
+
   return null
 }

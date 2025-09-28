@@ -4,7 +4,7 @@
 @theme {
     --color-*: initial;
     --color-white: #FFFFFF;
-    --color-black: #000000;
+    --color-black: #1f1f1f;
     --color-green: #55D940;
     --color-green-light: rgba(85, 217, 64, 0.2);
     --color-red: #FF4548;
@@ -13,14 +13,18 @@
     --color-orange: #FF9900;
     --color-orange-light: rgba(255, 153, 0, 0.15);
     --color-grey: #EFEFEF;
+    --color-grey-2: #F6F7ED;
     --color-grey-transparent: rgba(245, 245, 245, 0.9);
     --color-transparent: transparent;
     --color-dark-grey: #E0E0E0;
     --color-dark-grey-2: #C1C1C1;
+
     --color-blue: #4A6EFF;
     --color-green-dark: #1F920D;
     --color-red-dark: #A60000;
     --color-orange-dark: #CE5900;
+    --color-purple-transparent: rgba(195, 56, 190, 0.2);
+    --color-purple: #8C1488;
     --font-sans: "Montserrat", sans-serif;
     --font-display: "Borel", sans-serif;
     --font-title: "Abril Fatface", cursive;

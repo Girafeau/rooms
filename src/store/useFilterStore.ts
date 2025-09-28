@@ -1,23 +1,29 @@
 import { create } from "zustand"
+type SortMode = "floor" | "time"
 
-interface FilterState {
+type FilterStore = {
+  // filtres
   filteredTypes: string[]
-  filteredRoomsNumber: string[]
   filteredStatuses: number[]
-  sortMode: "floor" | "time"
-  setSortMode: (mode: "floor" | "time") => void
+  roomSearch: string
+  nameSearch: string
+  sortMode: SortMode
+
+  // actions
   toggleType: (type: string) => void
-  toggleNumber: (number: string) => void
   toggleStatus: (status: number) => void
+  setRoomSearch: (room: string) => void
+  setNameSearch: (name: string) => void
+  setSortMode: (mode: SortMode) => void
+  resetFilters: () => void
 }
 
-export const useFilterStore = create<FilterState>((set) => ({
+export const useFilterStore = create<FilterStore>((set) => ({
   filteredTypes: [],
-  filteredRoomsNumber: [],
   filteredStatuses: [],
-  sortMode: "floor", // valeur par défaut
-
-  setSortMode: (mode) => set({ sortMode: mode }),
+  roomSearch: "",
+  nameSearch: "",
+  sortMode: "floor",
 
   toggleType: (type) =>
     set((state) => ({
@@ -26,17 +32,23 @@ export const useFilterStore = create<FilterState>((set) => ({
         : [...state.filteredTypes, type],
     })),
 
-  toggleNumber: (number) =>
-    set((state) => ({
-      filteredRoomsNumber: state.filteredRoomsNumber.includes(number)
-        ? state.filteredRoomsNumber.filter((n) => n !== number)
-        : [...state.filteredRoomsNumber, number],
-    })),
-
   toggleStatus: (status) =>
     set((state) => ({
       filteredStatuses: state.filteredStatuses.includes(status)
         ? state.filteredStatuses.filter((s) => s !== status)
         : [...state.filteredStatuses, status],
     })),
+
+  setRoomSearch: (room) => set({ roomSearch: room }),
+  setNameSearch: (name) => set({ nameSearch: name }),
+  setSortMode: (mode) => set({ sortMode: mode }),
+
+  resetFilters: () =>
+    set({
+      filteredTypes: [],
+      filteredStatuses: [],
+      roomSearch: "",
+      nameSearch: "",
+      sortMode: "floor",
+    }),
 }))

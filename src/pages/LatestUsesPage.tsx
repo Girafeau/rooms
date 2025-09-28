@@ -50,7 +50,7 @@ export function LatestUsesPage() {
                     <p className="text-sm">Recherche par nom et prénom :</p>
                     <input
                         type="text"
-                        placeholder="Rechercher un nom..."
+                        placeholder="ex : MOLIN PAUL"
                         className={`${inputBase}`}
                         value={searchName}
                         onChange={(e) => setSearchName(e.target.value)}
@@ -61,7 +61,7 @@ export function LatestUsesPage() {
                      <p className="text-sm">Recherche par numéro de salle :</p>
                     <input
                         type="text"
-                        placeholder="Rechercher une salle..."
+                        placeholder="ex : 234"
                         className={`${inputBase}`}
                         value={searchRoom}
                         onChange={(e) => setSearchRoom(e.target.value)}
@@ -85,6 +85,7 @@ export function LatestUsesPage() {
                     <p className="text-sm">Limite de résultats :</p>
                     <input
                         type="number"
+                        placeholder="ex : 20"
                         min={1}
                         className={`${inputBase}`}
                         value={limit}
@@ -97,7 +98,7 @@ export function LatestUsesPage() {
             {loading ? (
                 <p>Chargement...</p>
             ) : uses.length === 0 ? (
-                <p>Aucune utilisation trouvée</p>
+                <p>Pas d'utilisation.</p>
             ) : (
                 <ul className="space-y-2">
                     {uses.map((use) => (
