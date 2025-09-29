@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react"
 import { supabase } from "../lib/supabase"
 import type { Use } from "../types/Use"
-import { inputBase } from "../App"
+import { buttonBase, inputBase } from "../App"
 import { Title } from "../components/Title"
+import { ListFilterPlus } from "lucide-react"
 
 type Period = "today" | "yesterday" | "this_week" | "this_month" | "all_time"
 
@@ -42,8 +43,15 @@ export function LatestUsesPage() {
     }, [searchName, searchRoom, period, limit])
 
     return (
-        <div>
-           <Title back={true} button={undefined}>Gestion des entrées sorties</Title>
+        <div className="px-4">
+           <Title back={true} title="" button={<div className="flex items-center gap-2">
+          <button
+
+            className={`${buttonBase} !p-4 !w-auto bg-white hover:bg-grey`}
+          >
+            <ListFilterPlus className="w-5 h-5 stroke-1" />
+          </button>
+        </div>} />
             {/* Filtres */}
             <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
                 <div className="flex flex-col gap-2">

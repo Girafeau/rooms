@@ -1,15 +1,17 @@
 import { ListFilterPlus, ScanBarcode } from "lucide-react"
-import BarCodeListener from "../components/BarCodeListener"
 import { RoomCard } from "../components/RoomCard"
 import { RoomTypeFilter } from "../components/RoomTypeFilter"
 import { Title } from "../components/Title"
 import { useFilterStore } from "../store/useFilterStore"
 import { useRoomsStore } from "../store/useRoomsStore"
 import { buttonBase } from "../App"
+import { useState } from "react"
+import { ScanHistoryPanel } from "../components/ScanHistoryPanel"
 
 export default function RoomsPage() {
   const { rooms } = useRoomsStore()
   const { filteredTypes, roomSearch, nameSearch, filteredStatuses, sortMode } = useFilterStore()
+  const [scanPanelOpen, setScanPanelOpen] = useState(false)
 
   // Filtrage
   let filteredRooms = rooms
@@ -55,8 +57,8 @@ export default function RoomsPage() {
       .sort((a, b) => b - a)
 
     return (
-      <div className="flex flex-col gap-4">
-        <Title back={true} button={<div className="flex items-center gap-2">
+      <div className="flex flex-col gap-4 px-4">
+        <Title back={true} title="" button={<div className="flex items-center gap-2">
           <button
 
             className={`${buttonBase} !p-4 !w-auto bg-white hover:bg-grey`}
@@ -64,15 +66,16 @@ export default function RoomsPage() {
             <ListFilterPlus className="w-5 h-5 stroke-1" />
           </button>
           <button
-
+            onClick={() => setScanPanelOpen(true)}
             className={`${buttonBase} !p-4 !w-auto bg-white hover:bg-grey`}
           >
             <ScanBarcode className="w-5 h-5 stroke-1" />
           </button>
         </div>}>
-          Gestion des salles
+
         </Title>
         <RoomTypeFilter />
+        <ScanHistoryPanel open={scanPanelOpen} onClose={() => setScanPanelOpen(false)} />
         {sortedFloors.map((floor) => (
           <div key={floor}>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4">
@@ -100,7 +103,6 @@ export default function RoomsPage() {
             </div>
           </div>
         ))}
-        <BarCodeListener />
       </div>
     )
   }
@@ -139,7 +141,6 @@ export default function RoomsPage() {
             <RoomCard key={room.number} room={room} />
           ))}
         </div>
-        <BarCodeListener />
       </div>
     )
   }

@@ -11,6 +11,7 @@ import { Layout } from "./components/Layout"
 import { SettingsPage } from "./pages/SettingsPage"
 import { SupportPage } from "./pages/SupportPage"
 import { StatsPage } from "./pages/StatsPage"
+import BarCodeListener from "./components/BarCodeListener"
 
 export const buttonBase = "rounded-xl  w-full flex items-center justify-center gap-2 px-4 py-3 transition-colors bg-grey  hover:bg-dark-grey disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
 export const inputBase = "rounded-xl bg-grey px-4 py-3 w-full focus:border-dark-grey focus:outline focus:outline-dark-grey focus:invalid:border-red [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
@@ -29,6 +30,7 @@ function Page({ children }: { children: React.ReactNode }) {
           </div>
         </header>
       )}
+      <BarCodeListener />
       <main>{children}</main>
     </Layout>
   )

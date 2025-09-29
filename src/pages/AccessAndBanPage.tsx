@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react"
 import { supabase } from "../lib/supabase"
 import { buttonBase, inputBase } from "../App"
-import { Plus, Ban, X, Check, Key } from "lucide-react"
+import { Plus, Ban, X, Check, Key, UserPlus, ListFilterPlus } from "lucide-react"
+import { Title } from "../components/Title"
 
 type User = {
     id: number
@@ -187,8 +188,24 @@ export default function AccessAndBanPage() {
     })
 
     return (
-        <div className="p-6 flex flex-col gap-4">
-            <h1 className="text-5xl font-bold font-title mb-8">Gestion des utilisateurs.</h1>
+        <div className="flex flex-col gap-4 px-4">
+             <Title back={true} title="" button={<div className="flex items-center gap-2">
+                 <button
+
+            className={`${buttonBase} !p-4 !w-auto bg-white hover:bg-grey`}
+          >
+            <ListFilterPlus className="w-5 h-5 stroke-1" />
+          </button>
+          <button
+
+            className={`${buttonBase} !p-4 !w-auto`}
+          >
+            <UserPlus className="w-5 h-5 stroke-1" />
+          </button>
+        </div>}>
+          
+        </Title>
+           
 
             {/* Barre de recherche et filtres */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

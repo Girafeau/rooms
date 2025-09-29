@@ -81,9 +81,9 @@ export function Nav({ open, setOpen }: { open: boolean; setOpen: (o: boolean) =>
                 <hr className="border-grey" />
                 {user && (
                     <div className="flex items-center justify-center gap-3">
-                        <div className="relative flex items-center justify-center p-4 rounded-full bg-purple-transparent text-purple">
+                        <div className="flex items-center justify-center p-4 rounded-full bg-purple-transparent text-purple">
                             <User className="w-5 h-5 stroke-1" />
-                            <div className="absolute w-2 h-2 bg-green top-1 right-1 rounded-full"></div>
+                           
                         </div>
                         {open && (
                             <div className="flex flex-col items-center text-sm gap-2">

@@ -2,14 +2,11 @@ import { create } from "zustand"
 type SortMode = "floor" | "time"
 
 type FilterStore = {
-  // filtres
   filteredTypes: string[]
   filteredStatuses: number[]
   roomSearch: string
   nameSearch: string
   sortMode: SortMode
-
-  // actions
   toggleType: (type: string) => void
   toggleStatus: (status: number) => void
   setRoomSearch: (room: string) => void

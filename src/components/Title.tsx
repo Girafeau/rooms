@@ -4,13 +4,13 @@ import { useNavigate } from "react-router-dom"
 import { buttonBase } from "../App"
 
 type Props = {
-  children: React.ReactNode
+  title: React.ReactNode
   button: React.ReactNode
   back?: boolean          // 👉 true = bouton retour activé
   backTo?: string         // 👉 route spécifique (facultatif)
 }
 
-export function Title({ children, button, back = false, backTo }: Props) {
+export function Title({ title, button, back = false, backTo }: Props) {
   const navigate = useNavigate()
 
   const handleBack = () => {
@@ -22,8 +22,8 @@ export function Title({ children, button, back = false, backTo }: Props) {
   }
 
   return (
-    <div className="sticky top-0 z-10 flex items-center gap-4 bg-white p-4 border-b border-grey justify-between">
-      <h1 className="text-2xl font-title">{children}</h1>
+    <div className="sticky top-0 z-10 flex items-center gap-4 bg-white py-4 border-b border-grey justify-between mb-4">
+      <h1 className="text-2xl font-title">{title}</h1>
       {back && (
         <div className="flex gap-2 items-center">
            {button}

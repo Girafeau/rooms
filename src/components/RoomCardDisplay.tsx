@@ -25,7 +25,6 @@ const lightColors: Record<RoomWithStatus["status"], string> = {
 }
 
 export function RoomCardDisplay({ room }: Props) {
-   console.log(room);
    
     return (
         <div className="flex flex-col">
