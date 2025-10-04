@@ -49,7 +49,7 @@ export function RoomCard({ room }: Props) {
   const now = new Date().toISOString()
 
   const { data, error } = await supabase
-    .from("bans")
+    .from("access_bans")
     .select("*")
     .eq("user_id", userId)
     .or(`expires_at.is.null,expires_at.gt.${now}`)

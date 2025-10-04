@@ -2,6 +2,7 @@
 import { CornerUpLeft } from "lucide-react"
 import { useNavigate } from "react-router-dom"
 import { buttonBase } from "../App"
+import Clock from "./Clock"
 
 type Props = {
   title: React.ReactNode
@@ -23,6 +24,7 @@ export function Title({ title, button, back = false, backTo }: Props) {
 
   return (
     <div className="sticky top-0 z-10 flex items-center gap-4 bg-white py-4 border-b border-grey justify-between mb-4">
+      <Clock />
       <h1 className="text-2xl font-title">{title}</h1>
       {back && (
         <div className="flex gap-2 items-center">

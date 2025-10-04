@@ -1,12 +1,15 @@
 import { RoomCardDisplay } from "../components/RoomCardDisplay"
 import { useRoomsStore } from "../store/useRoomsStore"
+import { useSettingsStore } from "../store/useSettingsStore"
 
 export default function DisplayPage() {
   const { rooms } = useRoomsStore()
+  const { showReservedRooms } = useSettingsStore()
 
   // Filtrage par types dans la page
-  const filteredRooms = rooms.filter((r) => r.type === "Studio")
- 
+  const filteredRooms = rooms.filter((r) => r.type === "Studio").filter((r) =>
+    !r.reserved || showReservedRooms
+  )
 
   // Regrouper par étage pour l'affichage
   const groupedByFloorFiltered = filteredRooms.reduce<Record<number, typeof filteredRooms>>(
@@ -22,13 +25,13 @@ export default function DisplayPage() {
     .map(Number)
     .sort((a, b) => b - a)
 
-    
+
   return (
     <div className="flex flex-col gap-4 p-4">
-        
+
       {/* Encadré Studios */}
-     
- 
+
+
       {sortedFloors.map((floor) => (
         <div key={floor}>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-6 gap-4">
@@ -49,14 +52,15 @@ export default function DisplayPage() {
               </div>
             </div>
             {groupedByFloorFiltered[floor].sort((a, b) => (Number(a.number) || 0) - (Number(b.number) || 0)).map((room) => (
-               
+
               <RoomCardDisplay key={room.number} room={room} />
-     
+
             ))}
           </div>
-          
+
         </div>
       ))}
+      
     </div>
   )
 }

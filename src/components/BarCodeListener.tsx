@@ -2,9 +2,11 @@
 import { useEffect } from "react"
 import { supabase } from "../lib/supabase"
 import { useScanStore } from "../store/useScanStore"
+import { useToastStore } from "../store/useToastStore"
 
 export default function BarCodeListener() {
   const { addScan, updateScan } = useScanStore()
+  const { addToast } = useToastStore()
 
   useEffect(() => {
     let buffer = ""
@@ -13,14 +15,15 @@ export default function BarCodeListener() {
     const handleKeyDown = (e: KeyboardEvent) => {
       const target = e.target as HTMLElement
       if (
-        target.tagName === "INPUT" ||
-        target.tagName === "TEXTAREA" ||
-        target.tagName === "SELECT" ||
+        ["INPUT", "TEXTAREA", "SELECT"].includes(target.tagName) ||
         target.isContentEditable
-      ) return
+      )
+        return
 
       clearTimeout(timeout)
-      timeout = setTimeout(() => { buffer = "" }, 300)
+      timeout = setTimeout(() => {
+        buffer = ""
+      }, 300)
 
       if (e.key === "Enter") {
         if (buffer.length > 0) {
@@ -45,18 +48,22 @@ export default function BarCodeListener() {
 
     addScan({ id, code, timestamp, userFullName: null, userId: null, duration: 120 })
 
-    const { data, error } = await supabase
+    const { data } = await supabase
       .from("users")
       .select("*")
       .eq("barcode", code)
       .maybeSingle()
 
-    if (error || !data) {
+    const time = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+
+    if (!data) {
       updateScan(id, { userFullName: null, userId: null })
+      addToast(`Utilisateur inconnu a été scanné à ${time}.`)
     } else {
       updateScan(id, { userFullName: data.full_name, userId: data.id })
+      addToast(`${data.full_name} a été scanné à ${time}.`)
     }
   }
 
-  return null
+  return null // plus d'UI ici, c’est un listener pur
 }

@@ -1,5 +1,7 @@
 import { create } from "zustand"
-type SortMode = "floor" | "time"
+// src/store/useFilterStore.ts
+// ajoute "list" à la définition du sortMode
+type SortMode = "floor" | "time" | "list"
 
 type FilterStore = {
   filteredTypes: string[]

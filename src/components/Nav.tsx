@@ -32,12 +32,14 @@ export function Nav({ open, setOpen }: { open: boolean; setOpen: (o: boolean) =>
         >
             <div className="flex flex-col gap-4">
                 {/* Bouton toggle */}
+                 <div className="flex justify-start">
                 <button
                     onClick={() => setOpen(!open)}
                     className={`${buttonBase} !p-4 !w-auto`}
                 >
                     {open ? <ChevronsRightLeft className="w-5 h-5 stroke-1" /> : <ChevronsLeftRight className="w-5 h-5 stroke-1" />}
                 </button>
+                </div>
                 <hr className="border-grey" />
                 {/* Navigation */}
                 <nav className="flex flex-col gap-2">

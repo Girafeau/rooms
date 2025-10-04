@@ -23,7 +23,7 @@ export function RoomTypeFilter() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {/* Recherche par numéro de salle */}
         <div className="flex flex-col gap-2">
-          <p className="text-sm">Recherche par numéro de salle :</p>
+          <p className="text-sm">Recherche par numéro de salle</p>
           <input
             type="text"
             placeholder="ex : 432"
@@ -39,7 +39,7 @@ export function RoomTypeFilter() {
 
         {/* Recherche par nom */}
         <div className="flex flex-col gap-2">
-          <p className="text-sm">Recherche par nom et prénom :</p>
+          <p className="text-sm">Recherche par nom et prénom</p>
           <input
             type="text"
             placeholder="ex : MOLIN PAUL"
@@ -55,7 +55,7 @@ export function RoomTypeFilter() {
 
         {/* Modes d’affichage */}
         <div className="flex flex-col gap-2">
-          <p className="text-sm">Modes d'affichage :</p>
+          <p className="text-sm">Modes d'affichage</p>
           <div className="flex gap-2">
             <div
               onClick={() => setSortMode("floor")}
@@ -73,13 +73,21 @@ export function RoomTypeFilter() {
             >
               temps restant
             </div>
+            <div
+              onClick={() => setSortMode("list")}
+              className={`flex items-center cursor-pointer text-sm rounded-full py-3 px-4 ${
+                sortMode === "list" ? "bg-dark-grey" : "bg-grey"
+              }`}
+            >
+              liste
+            </div>
           </div>
         </div>
       </div>
 
       {/* Filtres type & status */}
       <div className="flex flex-col gap-2">
-        <p className="text-sm">Filtres :</p>
+        <p className="text-sm">Liste des filtres</p>
         <div className="flex flex-wrap gap-2">
           {types.map((type) => {
             const isChecked = filteredTypes.includes(type)
@@ -87,7 +95,7 @@ export function RoomTypeFilter() {
               <div
                 key={type}
                 onClick={() => toggleType(type)}
-                className={`flex bg-grey items-center cursor-pointer text-sm rounded-full py-2 px-3 ${
+                className={`flex bg-grey items-center cursor-pointer text-sm rounded-full py-3 px-4 ${
                   isChecked ? "!bg-dark-grey" : ""
                 }`}
               >
@@ -102,7 +110,7 @@ export function RoomTypeFilter() {
               <div
                 key={status}
                 onClick={() => toggleStatus(status)}
-                className={`flex bg-grey items-center cursor-pointer text-sm rounded-full py-2 px-3 ${
+                className={`flex bg-grey items-center cursor-pointer text-sm rounded-full py-3 px-4 ${
                   isChecked ? "!bg-dark-grey" : ""
                 }`}
               >

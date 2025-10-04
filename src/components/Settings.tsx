@@ -4,7 +4,8 @@ import ExportUsesButton from "./ExportUsesButton"
 import ImportUsesFromCsv from "./ImportUseFromCsv"
 
 export function Settings() {
-  const { showScores, toggleScores } = useSettingsStore()
+  const { showScores, toggleScores, showTimeRemaining, toggleTimeRemaining, showInRed, toggleInRed, showReservedRooms, toggleReservedRooms } = useSettingsStore()
+console.log(showTimeRemaining);
 
 
   return (
@@ -34,6 +35,27 @@ export function Settings() {
               checked={!showScores}
               onChange={toggleScores}
             />
+          </div>
+
+              <div className="flex flex-col gap-2">
+            <h3>Paramètres</h3>
+            <IconCheckbox
+              label="Masquer les temps restants"
+             checked={!showTimeRemaining}
+              onChange={toggleTimeRemaining}
+            />
+            <IconCheckbox
+              label="Masquer les studios spéciaux"
+              checked={!showReservedRooms}
+              onChange={toggleReservedRooms}
+            />
+             <IconCheckbox
+              label="Afficher les studios délogeables en rouge"
+              checked={showInRed}
+              onChange={toggleInRed}
+            />
+
+            
           </div>
 
           <ExportUsesButton />

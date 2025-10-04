@@ -70,7 +70,7 @@ export function LatestUsesPage() {
                     <input
                         type="text"
                         placeholder="ex : 234"
-                        className={`${inputBase}`}
+                        className={`${inputBase} text-sm`}
                         value={searchRoom}
                         onChange={(e) => setSearchRoom(e.target.value)}
                     />
@@ -79,7 +79,7 @@ export function LatestUsesPage() {
                     <div className="flex gap-2 text-sm"> <span>Période</span></div>
 
                     <select
-                        className={`${inputBase}  border-r-8 !border-transparent`}
+                        className={`${inputBase} text-sm border-r-8 !border-transparent`}
                         value={period}
                         onChange={(e) => setPeriod(e.target.value as Period)}
                     >
@@ -96,7 +96,7 @@ export function LatestUsesPage() {
                         type="number"
                         placeholder="ex : 20"
                         min={1}
-                        className={`${inputBase}`}
+                        className={`${inputBase} text-sm`}
                         value={limit}
                         onChange={(e) => setLimit(Number(e.target.value))}
                     />
