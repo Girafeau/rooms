@@ -1,27 +1,36 @@
 import { create } from "zustand"
 
 type SettingsState = {
-  showScores: boolean
-  toggleScores: () => void
-  isOpen: boolean
-  toggleOpen: () => void
   showTimeRemaining: boolean
-  toggleTimeRemaining: () => void
   showInRed: boolean
-  toggleInRed: () => void
   showReservedRooms: boolean
-  toggleReservedRooms: () => void
+  isOpen: boolean
+  toggleShowTimeRemaining: (value?: boolean, fromRemote?: boolean) => void
+  toggleShowInRed: (value?: boolean, fromRemote?: boolean) => void
+  toggleShowReservedRooms: (value?: boolean, fromRemote?: boolean) => void
+  toggleOpen: () => void
 }
 
 export const useSettingsStore = create<SettingsState>((set) => ({
-  showScores: true,
-  toggleScores: () => set((state) => ({ showScores: !state.showScores })),
   showTimeRemaining: true,
-  toggleTimeRemaining: () => set((state) => ({ showTimeRemaining: !state.showTimeRemaining })),
-  showInRed: true,
-  toggleInRed: () => set((state) => ({ showInRed: !state.showInRed })),
+  showInRed: false,
+  showReservedRooms: true,
   isOpen: false,
+
+  toggleShowTimeRemaining: (value) =>
+    set((state) => ({
+      showTimeRemaining: value ?? !state.showTimeRemaining,
+    })),
+
+  toggleShowInRed: (value) =>
+    set((state) => ({
+      showInRed: value ?? !state.showInRed,
+    })),
+
+  toggleShowReservedRooms: (value) =>
+    set((state) => ({
+      showReservedRooms: value ?? !state.showReservedRooms,
+    })),
+
   toggleOpen: () => set((state) => ({ isOpen: !state.isOpen })),
-  showReservedRooms: false,
-  toggleReservedRooms: () => set((state) => ({ showReservedRooms: !state.showReservedRooms }))
 }))

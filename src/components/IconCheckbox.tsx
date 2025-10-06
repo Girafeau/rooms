@@ -4,6 +4,7 @@ import { useState } from "react"
 type Props = {
   label: string
   checked?: boolean
+  disabled?: boolean
   onChange?: (checked: boolean) => void
 }
 

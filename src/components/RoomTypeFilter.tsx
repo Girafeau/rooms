@@ -1,7 +1,6 @@
 import { useFilterStore } from "../store/useFilterStore"
 import { statuses, types } from "../types/Room"
 import { inputBase } from "../App"
-import { useState } from "react"
 
 export function RoomTypeFilter() {
   const {
@@ -13,10 +12,8 @@ export function RoomTypeFilter() {
     toggleStatus,
     setSortMode,
     sortMode,
+    roomSearch, nameSearch,
   } = useFilterStore()
-
-  const [number, setNumber] = useState("")
-  const [name, setName] = useState("")
 
   return (
     <div className="flex flex-col gap-2">
@@ -28,10 +25,9 @@ export function RoomTypeFilter() {
             type="text"
             placeholder="ex : 432"
             className={`${inputBase} text-sm`}
-            value={number}
+            value={roomSearch}
             onChange={(e) => {
               const val = e.target.value
-              setNumber(val)
               setRoomSearch(val) // filtre en direct
             }}
           />
@@ -44,10 +40,9 @@ export function RoomTypeFilter() {
             type="text"
             placeholder="ex : MOLIN PAUL"
             className={`${inputBase} text-sm`}
-            value={name}
+            value={nameSearch}
             onChange={(e) => {
               const val = e.target.value
-              setName(val.toUpperCase())
               setNameSearch(val) // filtre en direct
             }}
           />

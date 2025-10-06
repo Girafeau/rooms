@@ -1,9 +1,8 @@
 import { useEffect, useState } from "react"
 import type { RoomWithStatus } from "../types/Room"
 import { supabase } from "../lib/supabase"
-import { Plus, UserPlus, UserPen, UserMinus } from "lucide-react"
+import { Plus, UserPlus, UserPen, UserMinus} from "lucide-react"
 import { ScoreBar } from "./ScoreBar"
-import { useSettingsStore } from "../store/useSettingsStore"
 import formatHHMM from "../utils/format"
 import { buttonBase } from "../App"
 import { useScanStore } from "../store/useScanStore"
@@ -32,7 +31,6 @@ const lightColors: Record<RoomWithStatus["status"], string> = {
 
 export function RoomCard({ room }: Props) {
   const { selectedScan } = useScanStore()
-  const { showScores } = useSettingsStore()
   const [showTeachers, setShowTeachers] = useState(false)
   const [replacing, setReplacing] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -249,6 +247,9 @@ export function RoomCard({ room }: Props) {
 
       {room.teachers.length > 0 && showTeachers && (
         <div className="flex flex-col gap-1">
+           <div className="flex gap-2">
+          
+                </div>
           {room.teachers.map((teacher) => (
             <div
               key={teacher.id}
@@ -267,7 +268,7 @@ export function RoomCard({ room }: Props) {
                 room.lastUse &&
                 room.lastUse.user_full_name === teacher.full_name ? (
                 <button
-                  className={`${buttonBase} !w-auto rounded-none`}
+                  className={`${buttonBase} !w-auto`}
                   onClick={handleExit}
                   disabled={loading}
                 >
@@ -275,7 +276,7 @@ export function RoomCard({ room }: Props) {
                 </button>
               ) : (
                 <button
-                  className={`${buttonBase} !w-auto rounded-none`}
+                  className={`${buttonBase} !w-auto`}
                   onClick={() => handleAddTeacher(teacher.full_name)}
                   disabled={loading}
                 >
@@ -284,10 +285,11 @@ export function RoomCard({ room }: Props) {
               )}
             </div>
           ))}
+         
         </div>
       )}
 
-      {showScores && room.score && (
+      {room.score && (
         <div className="w-full">
           <ScoreBar score={room.score} maxScore={10} />
         </div>
