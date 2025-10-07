@@ -16,11 +16,6 @@ export function Settings() {
 
   const { user } = useAuthStore()
   const [loading, setLoading] = useState(false)
-
-  // 🟢 Charger les paramètres depuis Supabase
-  
-
-  // 🟣 Écouter les mises à jour temps réel (Supabase Realtime)
  
 
   // 🧠 Sauvegarde sur Supabase
@@ -45,9 +40,9 @@ export function Settings() {
       {/* Panneau de configuration */}
       {true && (
         <div className="p-4 flex flex-col gap-4">
-          <h3 className="text-lg font-semibold mb-2">Paramètres d’affichage</h3>
+          <h3>Paramètres </h3>
 
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-2">
             <IconCheckbox
               label="Masquer les temps restants"
               checked={!showTimeRemaining}
@@ -59,7 +54,7 @@ export function Settings() {
             />
             <IconCheckbox
               label="Différencier l'affichage occupé/délogeable"
-              checked={showInRed}
+              checked={!showInRed}
               onChange={() => {
                 setShowInRed(!showInRed)
                 saveSetting("show_in_red", !showInRed)
