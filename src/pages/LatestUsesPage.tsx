@@ -113,27 +113,30 @@ export function LatestUsesPage() {
                     {uses.map((use) => (
                         <li
                             key={use.id}
-                            className="border p-2 rounded flex justify-between items-center"
+                            className="p-4 flex justify-between items-center bg-grey-transparent"
                         >
                             <div>
+                                <p>{use.room_number}</p>
                                 <p className="font-semibold">{use.user_full_name}</p>
                                 <p className="text-sm text-gray-600">
-                                    Salle #{use.room_number} –{" "}
                                     {new Date(use.entry_time).toLocaleString([], {
                                         day: "2-digit",
                                         month: "short",
                                         hour: "2-digit",
                                         minute: "2-digit",
-                                    })}
+                                    }).replace(",", "")}
+                                    {use.exit_time
+                                    ? ` - ${new Date(use.exit_time).toLocaleString([], {
+                                        day: "2-digit",
+                                        month: "short",
+                                        hour: "2-digit",
+                                        minute: "2-digit",
+                                    }).replace(",", "")}`
+                                    : " - en cours"}
                                 </p>
                             </div>
                             <div className="text-sm text-gray-500">
-                                {use.exit_time
-                                    ? `Sortie: ${new Date(use.exit_time).toLocaleTimeString([], {
-                                        hour: "2-digit",
-                                        minute: "2-digit",
-                                    })}`
-                                    : "En cours"}
+                               
                             </div>
                         </li>
                     ))}

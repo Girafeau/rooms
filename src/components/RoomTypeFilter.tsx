@@ -35,7 +35,7 @@ export function RoomTypeFilter() {
 
         {/* Recherche par nom */}
         <div className="flex flex-col gap-2">
-          <p className="text-sm">Recherche par nom et prénom</p>
+          <p className="text-sm">Recherche par nom</p>
           <input
             type="text"
             placeholder="ex : MOLIN PAUL"
