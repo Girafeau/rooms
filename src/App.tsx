@@ -14,7 +14,7 @@ import { SupportPage } from "./pages/SupportPage"
 import { StatsPage } from "./pages/StatsPage"
 import BarCodeListener from "./components/BarCodeListener"
 import { ToastContainer } from "./components/ToastContainer"
-import { supabase } from "./lib/supabase"
+import { useRoomsStore } from "./store/useRoomsStore"
 
 export const buttonBase = "rounded-xl  w-full flex items-center justify-center gap-2 px-4 py-3 transition-colors bg-grey  hover:bg-dark-grey disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
 export const inputBase = "rounded-xl bg-grey px-4 py-3 w-full focus:border-dark-grey focus:outline focus:outline-dark-grey focus:invalid:border-red [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
@@ -42,43 +42,24 @@ function Page({ children }: { children: React.ReactNode }) {
 
 export default function App() {
   const initSession = useAuthStore((s) => s.initSession)
-  const { user } = useAuthStore()
-  const {
-    toggleShowTimeRemaining,
-    toggleShowInRed,
-    toggleShowReservedRooms,
-  } = useSettingsStore()
+    const { user } = useAuthStore()
+    const { loadUserSettings, initialized } = useSettingsStore()
+    const { fetchRooms, subscribeRealtime } = useRoomsStore()
 
   useEffect(() => {
     initSession()
   }, [initSession])
 
   useEffect(() => {
-    if (!user) return
+    fetchRooms()
+    subscribeRealtime()
+  }, [fetchRooms, subscribeRealtime])
 
-    const loadSettings = async () => {
-      const { data, error } = await supabase
-        .from("settings")
-        .select("show_time_remaining, show_in_red, show_reserved_rooms")
-        .eq("user_id", user.id)
-        .maybeSingle()
-
-      if (error) {
-        console.error("Erreur de chargement des paramètres :", error)
-        return
-      }
-
-      if (data) {
-        if (data.show_time_remaining !== undefined)
-          toggleShowTimeRemaining(data.show_time_remaining, true)
-        if (data.show_in_red !== undefined) toggleShowInRed(data.show_in_red, true)
-        if (data.show_reserved_rooms !== undefined)
-          toggleShowReservedRooms(data.show_reserved_rooms, true)
-      }
+   useEffect(() => {
+    if (user && !initialized) {
+      loadUserSettings(user.id)
     }
-
-    loadSettings()
-  }, [user])
+  }, [user, initialized, loadUserSettings])
 
   return (
     <BrowserRouter>

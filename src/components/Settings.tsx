@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { supabase } from "../lib/supabase"
 import { useSettingsStore } from "../store/useSettingsStore"
 import { useAuthStore } from "../store/authStore"
@@ -7,11 +7,11 @@ import { IconCheckbox } from "./IconCheckbox"
 export function Settings() {
   const {
     showTimeRemaining,
-    toggleShowTimeRemaining,
+    setShowInRed,
     showInRed,
-    toggleShowInRed,
+    setShowTimeRemaining,
     showReservedRooms,
-    toggleShowReservedRooms
+    setShowReservedRooms
   } = useSettingsStore()
 
   const { user } = useAuthStore()
@@ -21,34 +21,7 @@ export function Settings() {
   
 
   // 🟣 Écouter les mises à jour temps réel (Supabase Realtime)
-  useEffect(() => {
-    if (!user) return
-
-    const channel = supabase
-      .channel(`settings_${user.id}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "settings",
-          filter: `user_id=eq.${user.id}`,
-        },
-        (payload) => {
-          const newData = payload.new as any
-          if (newData) {
-            toggleShowTimeRemaining(newData.show_time_remaining, true)
-            toggleShowInRed(newData.show_in_red, true)
-            toggleShowReservedRooms(newData.show_reserved_rooms, true)
-          }
-        }
-      )
-      .subscribe()
-
-    return () => {
-      supabase.removeChannel(channel)
-    }
-  }, [user])
+ 
 
   // 🧠 Sauvegarde sur Supabase
   const saveSetting = async (
@@ -77,9 +50,9 @@ export function Settings() {
           <div className="flex flex-col gap-3">
             <IconCheckbox
               label="Masquer les temps restants"
-              checked={showTimeRemaining}
+              checked={!showTimeRemaining}
               onChange={() => {
-                toggleShowTimeRemaining(!showTimeRemaining)
+                setShowTimeRemaining(!showTimeRemaining)
                 saveSetting("show_time_remaining", !showTimeRemaining)
               }}
               disabled={loading}
@@ -88,16 +61,16 @@ export function Settings() {
               label="Différencier l'affichage occupé/délogeable"
               checked={showInRed}
               onChange={() => {
-                toggleShowInRed(!showInRed)
+                setShowInRed(!showInRed)
                 saveSetting("show_in_red", !showInRed)
               }}
               disabled={loading}
             />
             <IconCheckbox
               label="Masquer les studios réservés"
-              checked={showReservedRooms}
+              checked={!showReservedRooms}
               onChange={() => {
-                toggleShowReservedRooms(!showReservedRooms)
+                setShowReservedRooms(!showReservedRooms)
                 saveSetting("show_reserved_rooms", !showReservedRooms)
               }}
               disabled={loading}
