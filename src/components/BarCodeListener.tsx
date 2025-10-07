@@ -58,7 +58,7 @@ export default function BarCodeListener() {
 
     if (!data) {
       updateScan(id, { userFullName: null, userId: null })
-      addToast(`Utilisateur inconnu a été scanné à ${time}.`)
+      addToast(`Un utilisateur inconnu a été scanné à ${time}.`)
     } else {
       updateScan(id, { userFullName: data.full_name, userId: data.id })
       addToast(`${data.full_name} a été scanné à ${time}.`)

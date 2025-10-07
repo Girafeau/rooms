@@ -188,7 +188,7 @@ export default function AccessAndBanPage() {
     })
 
     return (
-        <div className="flex flex-col gap-4 px-4">
+        <div className="px-4">
              <Title back={true} title="" button={<div className="flex items-center gap-2">
                  <button
 

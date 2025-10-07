@@ -25,6 +25,7 @@ interface SpeechRecognitionErrorEvent extends Event {
 }
 
 interface SpeechRecognitionEvent extends Event {
+  resultIndex: any
   results: SpeechRecognitionResultList
 }
 

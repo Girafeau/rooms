@@ -12,6 +12,8 @@ export type Scan = {
 type ScanStore = {
   scans: Scan[]
   selectedScan: Scan | null
+  isOpen: boolean
+  toggleOpen: () => void
   addScan: (scan: Scan) => void
   updateScan: (id: string, data: Partial<Scan>) => void
   setSelectedScan: (id: string | null) => void
@@ -22,6 +24,11 @@ type ScanStore = {
 export const useScanStore = create<ScanStore>((set, get) => ({
   scans: [],
   selectedScan: null,
+  isOpen: false,
+  toggleOpen: () =>
+    set((state) => ({
+      isOpen: !state.isOpen,
+    })),
 
   addScan: (scan) =>
     set((state) => ({

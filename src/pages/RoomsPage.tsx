@@ -105,7 +105,7 @@ const closeScanPanel = () => {
       .sort((a, b) => b - a)
 
     return (
-      <div className="flex flex-col gap-4 px-4">
+      <div className="px-4">
         <Title back={true} title="" button={ActionButtons} />
         <RoomTypeFilter />
         <ScanHistoryPanel open={scanPanelOpen} onClose={closeScanPanel} />
@@ -162,7 +162,7 @@ const closeScanPanel = () => {
     })
 
     return (
-      <div className="flex flex-col gap-4 px-4">
+      <div className="px-4">
         <Title back={true} title="" button={ActionButtons} />
         <RoomTypeFilter />
         <ScanHistoryPanel open={scanPanelOpen} onClose={closeScanPanel} />
@@ -203,7 +203,7 @@ const closeScanPanel = () => {
   })
 
     return (
-      <div className="flex flex-col gap-4 px-4">
+      <div className="px-4">
         <Title back={true} title="" button={ActionButtons} />
         <RoomTypeFilter />
         <ScanHistoryPanel open={scanPanelOpen} onClose={() => setScanPanelOpen(false)} />

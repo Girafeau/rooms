@@ -39,7 +39,7 @@ export function Settings() {
     
       {/* Panneau de configuration */}
       {true && (
-        <div className="p-4 flex flex-col gap-4">
+        <div className="flex flex-col gap-4">
           <h3>Paramètres </h3>
 
           <div className="flex flex-col gap-2">

@@ -128,5 +128,3 @@ export const useRoomsStore = create<RoomsStore>((set, get) => ({
 
 
 // Auto-init store
-useRoomsStore.getState().fetchRooms()
-useRoomsStore.getState().subscribeRealtime()
