@@ -156,7 +156,7 @@ function ManualAddModal({
 
   return (
     <div className="fixed inset-0 bg-grey-transparent flex items-center justify-center z-50">
-      <div className="bg-white w-96 flex flex-col gap-4 shadow-lg rounded-md">
+      <div className="bg-white w-96 flex flex-col gap-4">
         <div className="flex items-center justify-between mx-4 py-4 border-b border-grey">
           <h2 className="font-semibold">Ajouter un scan manuel</h2>
           <button onClick={onClose} className={`${buttonBase} !w-auto !p-4`}>
@@ -176,33 +176,34 @@ function ManualAddModal({
           {loading && <p className="text-sm text-gray-500">Recherche...</p>}
 
           {/* Résultats */}
-          <div className="flex flex-col gap-1 max-h-64 overflow-y-auto">
+          <div className="flex flex-col gap-2 max-h-64 overflow-y-auto">
             {results.map((user) => (
               <div
                 key={user.id}
-                className="p-2 border rounded cursor-pointer hover:bg-grey transition"
+                className="p-4 cursor-pointer hover:bg-grey transition bg-grey-transparent"
                 onClick={() => onAdd(user)}
               >
+                <p className="text-sm text-gray-500">{user.barcode}</p>
                 <p className="font-medium">{user.full_name}</p>
-                <p className="text-xs text-gray-500">{user.barcode || "Aucun code barre"}</p>
+                
               </div>
             ))}
 
             {/* Aucun résultat → bouton d’ajout manuel */}
             {noResult && !loading && (
-              <div className="p-4 text-center border rounded bg-grey-transparent">
-                <p className="text-sm mb-2">Aucun utilisateur trouvé.</p>
+              <div>
+                <p className="text-sm mb-2 text-red p-4 bg-red-light">Pas d'utilisateur trouvé.</p>
                 <button
-                  className={`${buttonBase} text-sm bg-black text-white`}
+                  className={`${buttonBase} text-sm`}
                   onClick={() =>
                     onAdd({
                       id: null,
                       full_name: search.trim().toUpperCase(),
-                      barcode: "manuel",
+                      barcode: "ajout manuel",
                     })
                   }
                 >
-                  Ajouter quand même
+                  <Plus className="w-5 h-5 stroke-1" />
                 </button>
               </div>
             )}

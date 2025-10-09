@@ -1,15 +1,17 @@
 import { useFilterStore } from "../store/useFilterStore"
-import { statuses, types } from "../types/Room"
+import { statuses, types, reserved } from "../types/Room"
 import { inputBase } from "../App"
 
 export function RoomTypeFilter() {
   const {
     filteredTypes,
     filteredStatuses,
+    filteredReserved,
     setRoomSearch,
     setNameSearch,
     toggleType,
     toggleStatus,
+    toggleReserved,
     setSortMode,
     sortMode,
     roomSearch, nameSearch,
@@ -99,6 +101,21 @@ export function RoomTypeFilter() {
             )
           })}
 
+            {reserved.map((r) => {
+            const isChecked = filteredReserved.includes(r)
+            return (
+              <div
+                key={r}
+                onClick={() => toggleReserved(r)}
+                className={`flex bg-grey items-center cursor-pointer text-sm rounded-full py-3 px-4 ${
+                  isChecked ? "!bg-dark-grey" : ""
+                }`}
+              >
+                <span>type : {r.toLowerCase()}</span>
+              </div>
+            )
+          })}
+
           {statuses.map((status) => {
             const isChecked = filteredStatuses.includes(status)
             return (
@@ -113,6 +130,8 @@ export function RoomTypeFilter() {
               </div>
             )
           })}
+
+        
         </div>
       </div>
     </div>

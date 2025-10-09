@@ -6,11 +6,13 @@ type SortMode = "floor" | "time" | "list"
 type FilterStore = {
   filteredTypes: string[]
   filteredStatuses: number[]
+  filteredReserved: string[]
   roomSearch: string
   nameSearch: string
   sortMode: SortMode
   toggleType: (type: string) => void
   toggleStatus: (status: number) => void
+  toggleReserved: (reserved: string) => void
   setRoomSearch: (room: string) => void
   setNameSearch: (name: string) => void
   setSortMode: (mode: SortMode) => void
@@ -20,6 +22,7 @@ type FilterStore = {
 export const useFilterStore = create<FilterStore>((set) => ({
   filteredTypes: [],
   filteredStatuses: [],
+  filteredReserved: [],
   roomSearch: "",
   nameSearch: "",
   sortMode: "floor",
@@ -38,6 +41,13 @@ export const useFilterStore = create<FilterStore>((set) => ({
         : [...state.filteredStatuses, status],
     })),
 
+    toggleReserved: (reserved) =>
+    set((state) => ({
+      filteredReserved: state.filteredReserved.includes(reserved)
+        ? state.filteredReserved.filter((s) => s !== reserved)
+        : [...state.filteredReserved, reserved],
+    })),
+
   setRoomSearch: (room) => set({ roomSearch: room }),
   setNameSearch: (name) => set({ nameSearch: name }),
   setSortMode: (mode) => set({ sortMode: mode }),
@@ -46,6 +56,7 @@ export const useFilterStore = create<FilterStore>((set) => ({
     set({
       filteredTypes: [],
       filteredStatuses: [],
+      filteredReserved: [],
       roomSearch: "",
       nameSearch: "",
       sortMode: "floor",

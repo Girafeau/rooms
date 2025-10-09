@@ -210,7 +210,7 @@ export default function AccessAndBanPage() {
             {/* Barre de recherche et filtres */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="flex flex-col gap-2">
-                    <p className="text-sm">Recherche par nom et prénom :</p>
+                    <p className="text-sm">Recherche par nom</p>
                     <input
                         type="text"
                         placeholder="ex : BAYER ALINA"
@@ -221,7 +221,7 @@ export default function AccessAndBanPage() {
                 </div>
 
                 <div className="flex flex-col gap-2">
-                    <p className="text-sm">Recherche par numéro de salle :</p>
+                    <p className="text-sm">Recherche par numéro de salle</p>
                     <input
                         type="text"
                         placeholder="ex : 126"
@@ -232,7 +232,7 @@ export default function AccessAndBanPage() {
                 </div>
 
                 <div className="flex flex-col gap-2">
-                    <p className="text-sm">Liste des filtres :</p>
+                    <p className="text-sm">Liste des filtres</p>
                     <div className="flex gap-2">
                         <div
                                       className={`flex items-center cursor-pointer text-sm rounded-full py-3 px-4 ${filterBan.includes("banned")  ? "bg-dark-grey" : "bg-grey"}`}

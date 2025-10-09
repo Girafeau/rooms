@@ -27,8 +27,13 @@ export type Room = {
     | "Salle"
     | "Salle de concert";
 
+    export type Reserved = 
+    | "Standard"
+    | "Réservé"
+
     export const types: Type[] = ["Studio", "Salle"]
     export const statuses: number[] = [0, 1, 2]
+    export const reserved: Reserved[] = ["Standard"]
 
    export const statusLabels: Record<string, string> = {
   "0": "Occupé",

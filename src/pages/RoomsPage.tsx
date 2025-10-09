@@ -21,7 +21,7 @@ const colors: Record<RoomWithStatus["status"], string> = {
 export default function RoomsPage() {
   const { rooms } = useRoomsStore()
   const { scans } = useScanStore()
-  const { filteredTypes, roomSearch, nameSearch, filteredStatuses, sortMode } = useFilterStore()
+  const { filteredTypes, roomSearch, nameSearch, filteredStatuses, sortMode, filteredReserved } = useFilterStore()
   const [filtersVisible, setFiltersVisible] = useState(true) // 👈 filtres visibles par défaut
   const [scanPanelOpen, setScanPanelOpen] = useState(false)
   const { newScanCount, increment, reset } = useScanNotificationStore()
@@ -53,6 +53,10 @@ export default function RoomsPage() {
   }
   if (filteredStatuses.length > 0) {
     filteredRooms = filteredRooms.filter((r) => filteredStatuses.includes(r.status))
+  }
+
+ if (filteredReserved.length > 0) {
+    filteredRooms = filteredRooms.filter((r) => !r.reserved)
   }
   if (roomSearch.trim() !== "") {
     filteredRooms = filteredRooms.filter((r) =>
