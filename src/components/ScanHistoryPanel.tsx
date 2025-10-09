@@ -1,4 +1,3 @@
-// src/components/ScanHistoryPanel.tsx
 import { useState, useEffect } from "react"
 import { useScanStore } from "../store/useScanStore"
 import { supabase } from "../lib/supabase"
@@ -29,9 +28,7 @@ export function ScanHistoryPanel({ open, onClose }: Props) {
   return (
     <>
       {/* Overlay */}
-      {open && (
-        <div className="fixed inset-0 bg-grey-transparent z-40" onClick={onClose} />
-      )}
+      {open && <div className="fixed inset-0 bg-grey-transparent z-40" onClick={onClose} />}
 
       {/* Panel */}
       <div
@@ -40,7 +37,7 @@ export function ScanHistoryPanel({ open, onClose }: Props) {
       >
         {/* Header */}
         <div className="flex items-center justify-between mx-4 py-4 border-b border-grey">
-          <h2 className=""></h2>
+          <h2 className="font-semibold text-lg">Historique des scans</h2>
           <div className="flex items-center gap-2">
             <button
               onClick={() => setShowManualModal(true)}
@@ -61,10 +58,23 @@ export function ScanHistoryPanel({ open, onClose }: Props) {
             {scans.map((scan) => (
               <div
                 key={scan.id}
-                className={`p-3 border rounded cursor-pointer ${selectedScan?.id === scan.id ? "bg-grey-transparent" : ""}`}
+                className={`relative p-3 border rounded cursor-pointer transition ${
+                  selectedScan?.id === scan.id ? "bg-grey" : "bg-grey-transparent"
+                }`}
                 onClick={() => setSelectedScan(scan.id)}
               >
-                <p className="text-sm">{scan.code}</p>
+                {/* ✅ Checkbox visuelle */}
+                <div className="absolute top-2 right-2">
+                  <div
+                    className={`w-4 h-4 border border-black flex items-center justify-center rounded-sm ${
+                      selectedScan?.id === scan.id ? "bg-black text-white" : "bg-white"
+                    }`}
+                  >
+                    {selectedScan?.id === scan.id && <Check className="w-3 h-3 stroke-[3]" />}
+                  </div>
+                </div>
+
+                <p className="text-sm text-gray-700">{scan.code}</p>
                 {scan.userFullName ? (
                   <p className="font-semibold">{scan.userFullName.toUpperCase()}</p>
                 ) : (
@@ -83,6 +93,7 @@ export function ScanHistoryPanel({ open, onClose }: Props) {
         </div>
       </div>
 
+      {/* ✅ Modal d’ajout manuel */}
       {showManualModal && (
         <ManualAddModal
           onClose={() => setShowManualModal(false)}
@@ -91,10 +102,10 @@ export function ScanHistoryPanel({ open, onClose }: Props) {
             const timestamp = new Date().toISOString()
             addScan({
               id,
-              code: "0",
+              code: user.barcode ?? "manuel", // 👈 si pas trouvé, on met "manuel"
               timestamp,
               userFullName: user.full_name,
-              userId: user.id,
+              userId: user.id ?? null,
               duration: 120,
             })
             setShowManualModal(false)
@@ -110,15 +121,17 @@ function ManualAddModal({
   onAdd,
 }: {
   onClose: () => void
-  onAdd: (user: { id: number; full_name: string }) => void
+  onAdd: (user: { id?: number | null; full_name: string; barcode?: string }) => void
 }) {
   const [search, setSearch] = useState("")
-  const [results, setResults] = useState<{ id: number; full_name: string }[]>([])
+  const [results, setResults] = useState<{ id: number; full_name: string; barcode?: string }[]>([])
   const [loading, setLoading] = useState(false)
+  const [noResult, setNoResult] = useState(false)
 
   useEffect(() => {
     if (!search.trim()) {
       setResults([])
+      setNoResult(false)
       return
     }
 
@@ -126,10 +139,14 @@ function ManualAddModal({
       setLoading(true)
       const { data, error } = await supabase
         .from("users")
-        .select("id, full_name")
+        .select("id, full_name, barcode")
         .ilike("full_name", `%${search}%`)
         .limit(10)
-      if (!error && data) setResults(data)
+
+      if (!error) {
+        setResults(data || [])
+        setNoResult(data?.length === 0)
+      }
       setLoading(false)
     }
 
@@ -139,39 +156,58 @@ function ManualAddModal({
 
   return (
     <div className="fixed inset-0 bg-grey-transparent flex items-center justify-center z-50">
-      <div className="bg-white w-96 flex flex-col gap-4 shadow-lg">
-         <div className="flex items-center justify-between mx-4 py-4 ">
-          <h2 className=""></h2>
-          <div className="flex items-center gap-2">
-            <button onClick={onClose} className={`${buttonBase} !w-auto !p-4`}>
-          <X className="w-5 h-5 stroke-1" />
-        </button>
-          </div>
-        </div>
-        <div className="flex flex-col gap-2 px-4">
-        <p className="text-sm">Nom et prénom</p>
-        <input
-          type="text"
-          value={search}
-          onChange={(e) => setSearch(e.target.value.toUpperCase())}
-          placeholder="ex : MOLIN PAUL"
-          className={`${inputBase} text-sm`}
-        />
-        </div>
-        {loading && <p className="text-sm text-gray-500">Recherche...</p>}
-        <div className="flex flex-col gap-2 max-h-64 overflow-y-auto">
-          {results.map((user) => (
-            <div
-              key={user.id}
-              className="p-2 border rounded cursor-pointer hover:bg-grey"
-              onClick={() => onAdd(user)}
-            >
-              {user.full_name}
-            </div>
-          ))}
+      <div className="bg-white w-96 flex flex-col gap-4 shadow-lg rounded-md">
+        <div className="flex items-center justify-between mx-4 py-4 border-b border-grey">
+          <h2 className="font-semibold">Ajouter un scan manuel</h2>
+          <button onClick={onClose} className={`${buttonBase} !w-auto !p-4`}>
+            <X className="w-5 h-5 stroke-1" />
+          </button>
         </div>
 
-       
+        <div className="flex flex-col gap-2 px-4 pb-4">
+          <p className="text-sm">Nom et prénom</p>
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value.toUpperCase())}
+            placeholder="ex : MOLIN PAUL"
+            className={`${inputBase} text-sm`}
+          />
+          {loading && <p className="text-sm text-gray-500">Recherche...</p>}
+
+          {/* Résultats */}
+          <div className="flex flex-col gap-1 max-h-64 overflow-y-auto">
+            {results.map((user) => (
+              <div
+                key={user.id}
+                className="p-2 border rounded cursor-pointer hover:bg-grey transition"
+                onClick={() => onAdd(user)}
+              >
+                <p className="font-medium">{user.full_name}</p>
+                <p className="text-xs text-gray-500">{user.barcode || "Aucun code barre"}</p>
+              </div>
+            ))}
+
+            {/* Aucun résultat → bouton d’ajout manuel */}
+            {noResult && !loading && (
+              <div className="p-4 text-center border rounded bg-grey-transparent">
+                <p className="text-sm mb-2">Aucun utilisateur trouvé.</p>
+                <button
+                  className={`${buttonBase} text-sm bg-black text-white`}
+                  onClick={() =>
+                    onAdd({
+                      id: null,
+                      full_name: search.trim().toUpperCase(),
+                      barcode: "manuel",
+                    })
+                  }
+                >
+                  Ajouter quand même
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   )

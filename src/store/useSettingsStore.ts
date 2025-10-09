@@ -18,6 +18,8 @@ type SettingsState = {
   updateUserSetting: (key: "show_time_remaining" | "show_in_red" | "show_reserved_rooms", value: boolean) => Promise<void>
 }
 
+let supabaseChannel: ReturnType<typeof supabase.channel> | null = null
+
 /**
  * 🧠 Store Zustand + Supabase realtime
  */
@@ -76,8 +78,10 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
       })
     }
 
+    if (supabaseChannel) return
+
     // écoute realtime
-    supabase
+    supabaseChannel = supabase
       .channel("settings")
       .on(
         "postgres_changes",
@@ -88,7 +92,7 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
           filter: `user_id=eq.${userId}`,
         },
         (payload) => {
-          const newData = payload.new as any
+          const newData = payload.new as any          
           if (newData) {
             set({
               showTimeRemaining: newData.show_time_remaining,
