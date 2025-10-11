@@ -208,17 +208,30 @@ export function RoomCard({ room }: Props) {
   }
 
   const handleAddMoreDuration = async () => {
-    if (!room.lastUse) return
-    setLoading(true)
+  if (!room.lastUse) return
+  setLoading(true)
+
+  try {
+    const entryTime = new Date(room.lastUse.entry_time)
+    const now = new Date()
+    const elapsedMs = now.getTime() - entryTime.getTime()
+    const elapsedMinutes = Math.floor(elapsedMs / 1000 / 60)
+
+    // ⏱️ nouveau max_duration = temps écoulé + 120 minutes restantes
+    const newMaxDuration = elapsedMinutes + 120
 
     const { error } = await supabase
       .from("uses")
-      .update({ max_duration: (room.lastUse.max_duration || 0) + 120 })
+      .update({ max_duration: newMaxDuration })
       .eq("id", room.lastUse.id)
 
     if (error) console.error(error)
+  } catch (e) {
+    console.error(e)
+  } finally {
     setLoading(false)
   }
+}
 
   const handleAddTeacher = async (full_name: string) => {
     setLoading(true)
