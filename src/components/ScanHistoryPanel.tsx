@@ -2,12 +2,13 @@ import { useState, useEffect } from "react"
 import { useScanStore } from "../store/useScanStore"
 import { supabase } from "../lib/supabase"
 import { buttonBase, inputBase } from "../App"
-import { Check, Plus, X } from "lucide-react"
+import { Check, Plus, X, BrushCleaning } from "lucide-react"
 
 type Props = { open: boolean; onClose: () => void }
 
 export function ScanHistoryPanel({ open, onClose }: Props) {
-  const { scans, selectedScan, setSelectedScan, removeScan, updateScan, addScan } = useScanStore()
+  const { scans, selectedScan, setSelectedScan, removeScan, updateScan, addScan, reset } =
+    useScanStore()
   const [showManualModal, setShowManualModal] = useState(false)
 
   const handleRegisterUnknown = async (scanId: string, name: string) => {
@@ -37,14 +38,38 @@ export function ScanHistoryPanel({ open, onClose }: Props) {
       >
         {/* Header */}
         <div className="flex items-center justify-between mx-4 py-4 border-b border-grey">
-          <h2 className="font-title text-2xl">Liste des scans</h2>
           <div className="flex items-center gap-2">
+            <h2 className="font-title text-xl font-semibold"></h2>
+
+          
+          </div>
+
+           
+
+          <div className="flex items-center gap-2">
+
+             {/* 🗑️ Bouton Effacer tout */}
+            {scans.length > 0 && (
+              <button
+                onClick={() => reset()}
+                className={`${buttonBase} !w-auto !p-4 bg-red-light text-red hover:bg-red-light-2`}
+                title=""
+              >
+                <BrushCleaning className="w-5 h-5 stroke-1" />
+              </button>
+            )}
+
+            {/* ➕ Bouton d’ajout manuel */}
             <button
               onClick={() => setShowManualModal(true)}
               className={`${buttonBase} !w-auto !p-4`}
             >
               <Plus className="w-5 h-5 stroke-1" />
             </button>
+
+          
+
+            {/* ❌ Fermer */}
             <button onClick={onClose} className={`${buttonBase} !w-auto !p-4`}>
               <X className="w-5 h-5 stroke-1" />
             </button>
@@ -53,28 +78,30 @@ export function ScanHistoryPanel({ open, onClose }: Props) {
 
         {/* Contenu */}
         <div className="p-4 flex flex-col gap-4 overflow-y-auto h-full">
+          {scans.length === 0 && (
+            <p className="text-sm">Personne n'a été scanné pour l'instant.</p>
+          )}
+
           {/* Liste des scans */}
           <div className="flex flex-col gap-2">
             {scans.map((scan) => (
               <div
                 key={scan.id}
-                className={`relative p-3 border rounded cursor-pointer transition ${
-                  selectedScan?.id === scan.id ? "bg-grey" : "bg-grey-transparent"
-                }`}
+                className={`relative p-4 cursor-pointer transition ${selectedScan?.id === scan.id ? "bg-grey-2" : "bg-grey-transparent hover:bg-grey"
+                  } flex flex-col`}
                 onClick={() => setSelectedScan(scan.id)}
               >
                 {/* ✅ Checkbox visuelle */}
-                <div className="absolute top-2 right-2">
+                <div className="absolute top-4 right-4">
                   <div
-                    className={`w-4 h-4 border border-black flex items-center justify-center rounded-sm ${
-                      selectedScan?.id === scan.id ? "bg-black text-white" : "bg-white"
-                    }`}
+                    className={`w-4 h-4 border border-black flex items-center justify-center ${selectedScan?.id === scan.id ? "bg-black text-white" : "bg-white"
+                      }`}
                   >
                     {selectedScan?.id === scan.id && <Check className="w-3 h-3 stroke-[3]" />}
                   </div>
                 </div>
 
-                <p className="text-sm text-gray-700">{scan.code}</p>
+                <p className="text-sm">{scan.code}</p>
                 {scan.userFullName ? (
                   <p className="font-semibold">{scan.userFullName.toUpperCase()}</p>
                 ) : (
@@ -84,7 +111,7 @@ export function ScanHistoryPanel({ open, onClose }: Props) {
                     onCancel={handleCancelUnknown}
                   />
                 )}
-                <p className="text-xs text-gray-500">
+                <p className="text-sm">
                   {new Date(scan.timestamp).toLocaleTimeString()}
                 </p>
               </div>
@@ -158,14 +185,14 @@ function ManualAddModal({
     <div className="fixed inset-0 bg-grey-transparent flex items-center justify-center z-50">
       <div className="bg-white w-96 flex flex-col gap-4">
         <div className="flex items-center justify-between mx-4 py-4 border-b border-grey">
-          <h2 className="font-semibold">Ajouter un scan manuel</h2>
+          <h2 className="font-semibold text-lg"></h2>
           <button onClick={onClose} className={`${buttonBase} !w-auto !p-4`}>
             <X className="w-5 h-5 stroke-1" />
           </button>
         </div>
 
         <div className="flex flex-col gap-2 px-4 pb-4">
-          <p className="text-sm">Nom et prénom</p>
+          <p className="text-sm">Recherche par nom</p>
           <input
             type="text"
             value={search}
@@ -173,37 +200,38 @@ function ManualAddModal({
             placeholder="ex : MOLIN PAUL"
             className={`${inputBase} text-sm`}
           />
-          {loading && <p className="text-sm text-gray-500">Recherche...</p>}
+          {loading && <p className="text-sm">Recherche...</p>}
 
           {/* Résultats */}
           <div className="flex flex-col gap-2 max-h-64 overflow-y-auto">
             {results.map((user) => (
               <div
                 key={user.id}
-                className="p-4 cursor-pointer hover:bg-grey transition bg-grey-transparent"
+                className="p-4 cursor-pointer hover:bg-grey-2 transition bg-grey-transparent"
                 onClick={() => onAdd(user)}
               >
-                <p className="text-sm text-gray-500">{user.barcode}</p>
-                <p className="font-medium">{user.full_name}</p>
-                
+                <p className="text-sm">{user.barcode}</p>
+                <p className="font-semibold">{user.full_name}</p>
               </div>
             ))}
 
-            {/* Aucun résultat → bouton d’ajout manuel */}
+            {/* Aucun résultat → ajout manuel */}
             {noResult && !loading && (
-              <div>
-                <p className="text-sm mb-2 text-red p-4 bg-red-light">Pas d'utilisateur trouvé.</p>
+              <div className="flex flex-col gap-2 mt-4">
+                <p className="text-sm">Personne n'a été trouvé.</p>
+                <p className="text-sm">Vous pouvez ajouter cette personne manuellement :</p>
                 <button
-                  className={`${buttonBase} text-sm`}
+                  className={`${buttonBase} text-sm flex items-center gap-2`}
                   onClick={() =>
                     onAdd({
                       id: null,
                       full_name: search.trim().toUpperCase(),
-                      barcode: "ajout manuel",
+                      barcode: "Saisi manuellement - utilisateur inconnu.",
                     })
                   }
                 >
                   <Plus className="w-5 h-5 stroke-1" />
+                 
                 </button>
               </div>
             )}
@@ -230,22 +258,23 @@ function UnknownUserForm({
         e.preventDefault()
         if (name.trim()) onRegister(scanId, name)
       }}
-      className="flex flex-col gap-2 mt-2"
+      className="flex flex-col gap-2 p-4 bg-white border border-grey mt-2 mb-2"
     >
-      <p className="text-xs text-red">L'utilisateur est inconnu.</p>
+      <p className="text-xs text-red">Utilisateur inconnu — renseignez un nom.</p>
+      <p className="text-sm">Nom et prénom</p>
       <input
         type="text"
         value={name}
         onChange={(e) => setName(e.target.value.toUpperCase())}
-        placeholder="Nom & prénom"
-        className={inputBase}
+        placeholder="ex : MOLIN PAUL"
+        className={`${inputBase} text-sm`}
       />
       <div className="flex gap-2">
-        <button type="submit" className={`${buttonBase} text-green-dark`}>
-          <Check className="w-4 h-4" />
+        <button type="submit" className={`${buttonBase}`}>
+          <Check className="w-5 h-5 stroke-1" />
         </button>
-        <button type="button" onClick={() => onCancel(scanId)} className={`${buttonBase} text-red`}>
-          <X className="w-4 h-4" />
+        <button type="button" onClick={() => onCancel(scanId)} className={`${buttonBase}`}>
+          <X className="w-5 h-5 stroke-1" />
         </button>
       </div>
     </form>

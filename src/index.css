@@ -60,8 +60,8 @@
 .striped-background-danger {
     background-image: repeating-linear-gradient(
         45deg,
-        #A60000 0,
-        #A60000 1px,
+        #f80f13 0,
+        #f80f13 2px,
         transparent 0,
         transparent 50%
     );

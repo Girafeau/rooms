@@ -106,7 +106,7 @@ export function RoomCard({ room }: Props) {
     try {
       const { error } = await supabase.from("uses").insert({
         room_number: room.number,
-        user_full_name: "Indisponible".toUpperCase(),
+        user_full_name: "Indisponibilité".toUpperCase(),
         entry_time: new Date().toISOString(),
         max_duration: 0,
         exit_time: null,
@@ -122,7 +122,7 @@ export function RoomCard({ room }: Props) {
 
   const handleAddUse = async () => {
     if (!selectedScan || !selectedScan.userFullName) {
-      setErrorMessage("Pas d'utilisateur scanné.")
+      setErrorMessage("Personne n'a été scanné.")
       return
     }
 
@@ -138,8 +138,8 @@ export function RoomCard({ room }: Props) {
               hour: "2-digit",
               minute: "2-digit",
             })
-              .replace(",", "") + " "
-            : " à vie "}pour la raison suivante : « ${reason}. »`
+              .replace(",", "")
+            : " à vie "}${reason ? " pour la raison suivante : " + reason + " »" : "."}`
         )
         return
       }
@@ -277,7 +277,7 @@ export function RoomCard({ room }: Props) {
 
         {(room.hidden_description || room.status === 3)  && (
           <div className={`p-4 ${lightColors[room.status]} flex flex-col`}>
-            <p className="text-sm">{room.status === 3 && "La salle est indisponible. "}{room.hidden_description}</p>
+            <p className="text-sm">{room.status === 3 && "Pas disponible à l'utilisation. "}{room.hidden_description}</p>
           </div>
         )}
       </div>
@@ -412,13 +412,14 @@ export function RoomCard({ room }: Props) {
           >
             <UserPlus className="w-5 h-5 stroke-1" />
           </button>
-          {errorMessage && (
+        </div>
+      )}
+
+        {errorMessage && (
             <div className="flex items-center gap-2 p-4 text-red bg-red-light text-sm">
               <p>{errorMessage}</p>
             </div>
           )}
-        </div>
-      )}
     </div>
   )
 }

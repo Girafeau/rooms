@@ -10,11 +10,11 @@ export function ToastContainer() {
       {toasts.map((toast) => (
         <div
           key={toast.id}
-          className="bg-black text-white p-4 shadow-lg flex items-center justify-between w-90 animate-slide-up"
+          className="bg-black text-white p-6 shadow-lg flex items-center justify-between w-100 animate-slide-up"
         >
           <span className="text-sm">{toast.message}</span>
           <button onClick={() => removeToast(toast.id)}>
-            <X className="w-4 h-4 text-white opacity-70 hover:opacity-100" />
+            <X className="w-5 h-5  opacity-70 hover:opacity-100 stroke-1" />
           </button>
         </div>
       ))}

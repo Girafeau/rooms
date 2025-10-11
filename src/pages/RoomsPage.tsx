@@ -30,6 +30,8 @@ export default function RoomsPage() {
     direction: "asc",
   })
   const lastScanCountRef = useRef(scans.length)
+  const activeFilterCount =
+    filteredTypes.length + filteredStatuses.length + filteredReserved.length
 
   useEffect(() => {
     if (!scanPanelOpen && scans.length > lastScanCountRef.current) {
@@ -76,9 +78,14 @@ export default function RoomsPage() {
 
        <button
         onClick={() => setFiltersVisible((prev) => !prev)}
-        className={`${buttonBase} !p-4 !w-auto  ${filtersVisible ? "!bg-black text-white" : "bg-white hover:bg-grey"}`}
+        className={`${buttonBase} !p-4 !w-auto relative ${filtersVisible ? "!bg-black text-white" : "bg-white hover:bg-grey"}`}
       >
         <ListFilterPlus className={`w-5 h-5 stroke-1`} />
+         {activeFilterCount > 0 && !filtersVisible && (
+            <span className="absolute -top-1 -left-1 w-6 h-6 px-1 flex items-center justify-center bg-red-light text-red text-xs rounded-full">
+              {activeFilterCount}
+            </span>
+          )}
       </button>
 
       <div className="relative">

@@ -63,5 +63,6 @@ export const useScanStore = create<ScanStore>((set, get) => ({
         state.selectedScan?.id === id ? null : state.selectedScan,
     })),
 
+
   reset: () => set({ scans: [], selectedScan: null }),
 }))

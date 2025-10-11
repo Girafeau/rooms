@@ -338,9 +338,9 @@ export default function AccessAndBanPage() {
                                                 hour: "2-digit",
                                                 minute: "2-digit",
                                             }).replace(",", "")
-                                            : " à vie "}
-                                    </b>{" "}
-                                    pour la raison suivante : « {bans[user.id]?.reason}. »
+                                            : " à vie"}
+                                    </b>
+                                    {bans[user.id]?.reason ?  " pour la raison suivante : « "  + bans[user.id]?.reason + " »" : "."}
                                 </p>
                                 <X
                                     className="w-5 h-5 stroke-1 cursor-pointer"

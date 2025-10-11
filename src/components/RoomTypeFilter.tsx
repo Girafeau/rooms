@@ -14,11 +14,17 @@ export function RoomTypeFilter() {
     toggleReserved,
     setSortMode,
     sortMode,
-    roomSearch, nameSearch,
+    roomSearch,
+    nameSearch,
   } = useFilterStore()
+
+  // 🧮 Compte le nombre total de filtres actifs
+  const activeFilterCount =
+    filteredTypes.length + filteredStatuses.length + filteredReserved.length
 
   return (
     <div className="flex flex-col gap-2">
+      {/* Recherche */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {/* Recherche par numéro de salle */}
         <div className="flex flex-col gap-2">
@@ -28,10 +34,7 @@ export function RoomTypeFilter() {
             placeholder="ex : 432"
             className={`${inputBase} text-sm`}
             value={roomSearch}
-            onChange={(e) => {
-              const val = e.target.value
-              setRoomSearch(val) // filtre en direct
-            }}
+            onChange={(e) => setRoomSearch(e.target.value)}
           />
         </div>
 
@@ -43,24 +46,21 @@ export function RoomTypeFilter() {
             placeholder="ex : MOLIN PAUL"
             className={`${inputBase} text-sm`}
             value={nameSearch}
-            onChange={(e) => {
-              const val = e.target.value
-              setNameSearch(val) // filtre en direct
-            }}
+            onChange={(e) => setNameSearch(e.target.value)}
           />
         </div>
 
         {/* Modes d’affichage */}
         <div className="flex flex-col gap-2">
-          <p className="text-sm">Modes d'affichage</p>
-          <div className="flex gap-2">
+          <p className="text-sm">Liste des affichages</p>
+          <div className="flex gap-2 flex-wrap">
             <div
               onClick={() => setSortMode("floor")}
               className={`flex items-center cursor-pointer text-sm rounded-full py-3 px-4 ${
                 sortMode === "floor" ? "bg-black text-white" : "bg-grey"
               }`}
             >
-              étage décroissant
+             mode : étage décroissant
             </div>
             <div
               onClick={() => setSortMode("time")}
@@ -68,24 +68,34 @@ export function RoomTypeFilter() {
                 sortMode === "time" ? "bg-black text-white" : "bg-grey"
               }`}
             >
-              temps restant
+              mode : temps restant
             </div>
-
           </div>
         </div>
       </div>
 
-      {/* Filtres type & status */}
+      {/* Filtres */}
       <div className="flex flex-col gap-2">
-        <p className="text-sm">Liste des filtres</p>
+        <div className="flex items-center gap-2">
+          <p className="text-sm">Liste des filtres</p>
+
+         {/* 🟢 Pastille du nombre de filtres actifs */}
+          {activeFilterCount > 0 && (
+            <span className="bg-red-light text-red text-xs rounded-full px-1 flex items-center justify-center w-6 h-6">
+              {activeFilterCount}
+            </span>
+          )}
+        </div>
+
         <div className="flex flex-wrap gap-2">
+          {/* Types */}
           {types.map((type) => {
             const isChecked = filteredTypes.includes(type)
             return (
               <div
                 key={type}
                 onClick={() => toggleType(type)}
-                className={`flex bg-grey items-center cursor-pointer text-sm rounded-full py-3 px-4 ${
+                className={`flex items-center cursor-pointer text-sm rounded-full py-3 px-4 bg-grey ${
                   isChecked ? "!bg-black text-white" : ""
                 }`}
               >
@@ -94,13 +104,14 @@ export function RoomTypeFilter() {
             )
           })}
 
-            {reserved.map((r) => {
+          {/* Reserved */}
+          {reserved.map((r) => {
             const isChecked = filteredReserved.includes(r)
             return (
               <div
                 key={r}
                 onClick={() => toggleReserved(r)}
-                className={`flex bg-grey items-center cursor-pointer text-sm rounded-full py-3 px-4 ${
+                className={`flex items-center cursor-pointer text-sm rounded-full py-3 px-4 bg-grey ${
                   isChecked ? "!bg-black text-white" : ""
                 }`}
               >
@@ -109,13 +120,14 @@ export function RoomTypeFilter() {
             )
           })}
 
+          {/* Statuts */}
           {statuses.map((status) => {
             const isChecked = filteredStatuses.includes(status)
             return (
               <div
                 key={status}
                 onClick={() => toggleStatus(status)}
-                className={`flex bg-grey items-center cursor-pointer text-sm rounded-full py-3 px-4 ${
+                className={`flex items-center cursor-pointer text-sm rounded-full py-3 px-4 bg-grey ${
                   isChecked ? "!bg-black text-white" : ""
                 }`}
               >
@@ -123,9 +135,8 @@ export function RoomTypeFilter() {
               </div>
             )
           })}
-
-        
         </div>
+         
       </div>
     </div>
   )
