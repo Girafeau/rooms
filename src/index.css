@@ -6,11 +6,13 @@
     --color-white: #FFFFFF;
     --color-black: #1f1f1f;
     --color-green: #55D940;
-    --color-green-light: rgba(85, 217, 64, 0.2);
+   
     --color-red: #FF4548;
     --color-red-light: rgba(255, 69, 72, 0.15);
+    --color-red-light-2: rgba(255, 69, 72, 0.3);
     --color-yellow: #FFCC00;
     --color-orange: #FF9900;
+    --color-orange-light-2: rgba(255, 153, 0, 0.30);
     --color-orange-light: rgba(255, 153, 0, 0.15);
     --color-grey: #EFEFEF;
     --color-grey-2: #F6F7ED;
@@ -18,7 +20,8 @@
     --color-transparent: transparent;
     --color-dark-grey: #E0E0E0;
     --color-dark-grey-2: #C1C1C1;
-
+    --color-green-light: rgba(85, 217, 64, 0.2);
+    --color-green-light-2: rgba(85, 217, 64, 0.4);
     --color-blue: #4A6EFF;
     --color-green-dark: #1F920D;
     --color-red-dark: #A60000;
@@ -38,4 +41,30 @@
 
 .animate-slide-up {
   animation: slide-up 0.3s ease-out forwards;
+}
+
+
+.striped-background {
+    background-image: repeating-linear-gradient(
+        45deg,
+        #E0E0E0 0,
+        #E0E0E0 2px,
+        transparent 0,
+        transparent 50%
+    );
+    background-size: 10px 10px;
+   
+}
+
+
+.striped-background-danger {
+    background-image: repeating-linear-gradient(
+        45deg,
+        #A60000 0,
+        #A60000 1px,
+        transparent 0,
+        transparent 50%
+    );
+    background-size: 10px 10px;
+   
 }

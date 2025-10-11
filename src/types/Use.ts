@@ -6,5 +6,6 @@
     max_duration: number
     room_number: number
     user_full_name: string
+    status: number
   }
   

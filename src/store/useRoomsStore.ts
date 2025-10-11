@@ -17,6 +17,7 @@ function computeRoomStatus(use: Use | null, now: Date = new Date()): number {
 
   // si max_duration = 0 → toujours occupée tant qu'il n'y a pas de exit_time
   if (use.max_duration === 0 && !use.exit_time) {
+    if (use.status === 0) return 3 // indisponible
     return 0 // occupée
   }
 
@@ -24,7 +25,9 @@ function computeRoomStatus(use: Use | null, now: Date = new Date()): number {
 
   if (use.exit_time && new Date(use.exit_time) < now) return 1 // libre si sortie faite
   if (now >= endTime && !use.exit_time) return 2 // délogeable
+  if (now < endTime && !use.exit_time && use.status === 0) return 3 // indisponible
   if (now < endTime && !use.exit_time) return 0 // occupée
+
 
   return 1
 }

@@ -8,21 +8,24 @@ type Props = {
 }
 
 const colors: Record<RoomWithStatus["status"], string> = {
-    1: "bg-green",
-    0: "bg-red",
-    2: "bg-orange"
+  1: "bg-green",
+  0: "bg-red",
+  3: "bg-red",
+  2: "bg-orange",
 }
 
 const darkColors: Record<RoomWithStatus["status"], string> = {
-    1: "text-green-dark",
-    0: "text-red-dark",
-    2: "text-orange-dark"
+  1: "text-green-dark",
+  0: "text-red-dark",
+  3: "text-red-dark",
+  2: "text-orange-dark",
 }
 
 const lightColors: Record<RoomWithStatus["status"], string> = {
-    1: "bg-green-light",
-    0: "bg-red-light",
-    2: "bg-orange-light"
+  1: "bg-green-light",
+  0: "bg-red-light",
+  3: "bg-red-light",
+  2: "bg-orange-light",
 }
 
 export function RoomCardDisplay({ room }: Props) {
@@ -36,7 +39,7 @@ export function RoomCardDisplay({ room }: Props) {
 
     return (
         <div className="flex flex-col">
-            <div className={`p-4 flex flex-col transition ${colors[displayStatus]}`}>
+            <div className={`p-4 flex flex-col transition ${colors[displayStatus]} ${room.status === 3 ? "striped-background-danger" : ""}`}>
                 <div className="flex justify-between items-center">
                     <h3 className={`text-lg font-bold mr-4`}>{room.number}</h3>
 

@@ -113,16 +113,17 @@ export default function RoomsPage() {
       .sort((a, b) => b - a)
 
     return (
-      <div className="px-4">
+      <div className="flex flex-col gap-4 px-4">
         <Title back={true} title="" button={ActionButtons} />
+        
         {filtersVisible && <RoomTypeFilter />}
         <ScanHistoryPanel open={scanPanelOpen} onClose={closeScanPanel} />
-        <div className="py-4 flex flex-col gap-4">
+        <div className="flex flex-col gap-4">
           {sortedFloors.map((floor) => (
             <div key={floor}>
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4">
                 <div className="text-center text-sm">
-                  <div className="p-4 flex flex-col items-center h-full justify-center bg-grey">
+                  <div className="p-4 flex flex-col items-center h-full justify-center bg-grey striped-background">
                     {floor > 0 ? (
                       <div>
                         <h2 className="text-l font-semibold">
@@ -173,11 +174,11 @@ export default function RoomsPage() {
     })
 
     return (
-      <div className="px-4">
-        <Title back={true} title="" button={ActionButtons} />
+      <div className="flex flex-col gap-4 px-4">
+         <Title back={true} title="" button={ActionButtons} />
        {filtersVisible && <RoomTypeFilter />}
         <ScanHistoryPanel open={scanPanelOpen} onClose={closeScanPanel} />
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4 py-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4">
           {sortedByTime.map((room) => (
             <RoomCard key={room.number} room={room} />
           ))}
@@ -214,12 +215,12 @@ export default function RoomsPage() {
     })
 
     return (
-      <div className="px-4">
+      <div className="flex flex-col gap-4 px-4">
         <Title back={true} title="" button={ActionButtons} />
         {filtersVisible && <RoomTypeFilter />}
         <ScanHistoryPanel open={scanPanelOpen} onClose={() => setScanPanelOpen(false)} />
 
-        <div className="py-4">
+        <div className="">
           <div className="overflow-x-auto border border-grey">
             <table className="min-w-full text-sm">
               <thead className="bg-grey text-left">

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
 import type { RoomWithStatus } from "../types/Room"
 import { supabase } from "../lib/supabase"
-import { Plus, UserPlus, UserPen, UserMinus} from "lucide-react"
+import { Plus, UserPlus, UserPen, UserMinus, Check, Ban} from "lucide-react"
 import { ScoreBar } from "./ScoreBar"
 import formatHHMM from "../utils/format"
 import { buttonBase } from "../App"
@@ -14,24 +14,28 @@ type Props = {
 const colors: Record<RoomWithStatus["status"], string> = {
   1: "bg-green",
   0: "bg-red",
+  3: "bg-red",
   2: "bg-orange",
 }
 
 const darkColors: Record<RoomWithStatus["status"], string> = {
   1: "text-green-dark",
   0: "text-red-dark",
+  3: "text-red-dark",
   2: "text-orange-dark",
 }
 
 const lightColors: Record<RoomWithStatus["status"], string> = {
   1: "bg-green-light",
   0: "bg-red-light",
+  3: "bg-red-light",
   2: "bg-orange-light",
 }
 
 export function RoomCard({ room }: Props) {
+
   const { selectedScan } = useScanStore()
-  const [showTeachers, setShowTeachers] = useState(false)
+  const [show, setShow] = useState(false)
   const [replacing, setReplacing] = useState(false)
   const [loading, setLoading] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
@@ -42,49 +46,78 @@ export function RoomCard({ room }: Props) {
     return () => clearTimeout(timer)
   }, [errorMessage])
 
-  
+
   const checkAccessBans = async (userId: number) => {
-  const now = new Date().toISOString()
+    const now = new Date().toISOString()
 
-  const { data, error } = await supabase
-    .from("access_bans")
-    .select("*")
-    .eq("user_id", userId)
-    .or(`expires_at.is.null,expires_at.gt.${now}`)
-    .maybeSingle()
+    const { data, error } = await supabase
+      .from("access_bans")
+      .select("*")
+      .eq("user_id", userId)
+      .or(`expires_at.is.null,expires_at.gt.${now}`)
+      .maybeSingle()
 
-  if (error) {
-    console.error("Erreur checkAccessBans:", error)
-    return { banned: false, reason: null, expires_at: null }
+    if (error) {
+      console.error("Erreur checkAccessBans:", error)
+      return { banned: false, reason: null, expires_at: null }
+    }
+
+    if (!data) {
+      return { banned: false, reason: null, expires_at: null }
+    }
+
+    return {
+      banned: true,
+      reason: data.reason,
+      expires_at: data.expires_at, // peut être null → ban à vie
+    }
   }
-
-  if (!data) {
-    return { banned: false, reason: null, expires_at: null }
-  }
-
-  return {
-    banned: true,
-    reason: data.reason,
-    expires_at: data.expires_at, // peut être null → ban à vie
-  }
-}
 
 
   const checkAccessRights = async (userId: number, roomNumber: string) => {
     const now = new Date().toISOString()
-     const { data, error } = await supabase
-    .from("access_rights")
-    .select("*")
-    .eq("user_id", userId)
-    .eq("room_number", roomNumber)
-    .or(`expires_at.is.null,expires_at.gt.${now}`)
-    .maybeSingle()    
- 
+    const { data, error } = await supabase
+      .from("access_rights")
+      .select("*")
+      .eq("user_id", userId)
+      .eq("room_number", roomNumber)
+      .or(`expires_at.is.null,expires_at.gt.${now}`)
+      .maybeSingle()
+
     if (error) {
       console.error(error)
       return false
     }
     return !!data
+  }
+
+  const handleSetUnavailable = async () => {
+    setLoading(true)
+
+    if (replacing && room.lastUse) {
+      const { error: exitError } = await supabase
+        .from("uses")
+        .update({ exit_time: new Date().toISOString() })
+        .eq("id", room.lastUse.id)
+
+      if (exitError) console.error(exitError)
+    }
+
+    try {
+      const { error } = await supabase.from("uses").insert({
+        room_number: room.number,
+        user_full_name: "Indisponible".toUpperCase(),
+        entry_time: new Date().toISOString(),
+        max_duration: 0,
+        exit_time: null,
+        status: 0,
+      })
+      if (error) console.error(error)
+    } finally {
+      setReplacing(false)
+      setLoading(false)
+      setShow(false)
+    }
   }
 
   const handleAddUse = async () => {
@@ -99,14 +132,14 @@ export function RoomCard({ room }: Props) {
         setErrorMessage(
           `L'utilisateur est banni
                   ${expires_at
-                    ? " jusqu'au " + new Date(expires_at!).toLocaleDateString("fr-FR", {
-                    day: "2-digit",
-                    month: "short",
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })
-                  .replace(",", "") + " "
-                    : " à vie "}pour la raison suivante : « ${reason}. »`
+            ? " jusqu'au " + new Date(expires_at!).toLocaleDateString("fr-FR", {
+              day: "2-digit",
+              month: "short",
+              hour: "2-digit",
+              minute: "2-digit",
+            })
+              .replace(",", "") + " "
+            : " à vie "}pour la raison suivante : « ${reason}. »`
         )
         return
       }
@@ -166,6 +199,7 @@ export function RoomCard({ room }: Props) {
 
     if (error) console.error(error)
     setLoading(false)
+    setShow(false)
   }
 
   const handlePrepareReplace = () => {
@@ -208,7 +242,7 @@ export function RoomCard({ room }: Props) {
 
     if (!error) {
       setReplacing(false)
-      setShowTeachers(false)
+      setShow(false)
     } else {
       console.error(error)
     }
@@ -220,9 +254,10 @@ export function RoomCard({ room }: Props) {
     <div className="flex flex-col gap-2">
       <div>
         <div
-          className={`p-4 flex flex-col transition ${room.teachers.length > 0 && "cursor-pointer"
-            }  ${colors[room.status]}`}
-          onClick={() => setShowTeachers(!showTeachers)}
+          className={`p-4 flex flex-col transition ${"cursor-pointer"
+            }  ${colors[room.status]} ${room.status === 3 ? "striped-background-danger" : ""
+            }`}
+          onClick={() => setShow(!show)}
         >
           <div className="flex justify-between items-center">
             <div className="flex items-center">
@@ -230,11 +265,13 @@ export function RoomCard({ room }: Props) {
                 {room.number}
               </h3>
             </div>
-            <span
-              className={`text-sm font-semibold truncate cursor-default ${darkColors[room.status]}`}
-            >
-              {room.type.toUpperCase()}
-            </span>
+            {true && (
+              <span
+                className={`text-sm font-semibold truncate cursor-default ${darkColors[room.status]}`}
+              >
+                {room.type.toUpperCase()}
+              </span>
+            )}
           </div>
         </div>
 
@@ -245,53 +282,87 @@ export function RoomCard({ room }: Props) {
         )}
       </div>
 
-      {room.teachers.length > 0 && showTeachers && (
-        <div className="flex flex-col gap-1">
-           <div className="flex gap-2">
-          
-                </div>
-          {room.teachers.map((teacher) => (
-            <div
-              key={teacher.id}
-              className="flex justify-between items-center"
-            >
-              <span
-                className={`text-sm ${(room.status === 0 || room.status === 2) &&
-                  room.lastUse &&
-                  room.lastUse.user_full_name === teacher.full_name &&
-                  darkColors[room.status]
-                  }`}
+      {show && (
+        <div className="flex flex-col gap-2">
+          <div className="flex gap-2">
+            {room.status === 1 && (
+              <button
+                className={`${buttonBase} text-sm !w-auto bg-red-light text-red hover:bg-red-light-2`}
+                onClick={handleSetUnavailable}
+                disabled={loading}
               >
-                {teacher.full_name.toUpperCase()}
-              </span>
-              {(room.status === 0 || room.status === 2) &&
-                room.lastUse &&
-                room.lastUse.user_full_name === teacher.full_name ? (
-                <button
-                  className={`${buttonBase} !w-auto`}
-                  onClick={handleExit}
-                  disabled={loading}
+                <Ban className="w-5 h-5 stroke-1" />
+              </button>
+            )}
+            {room.status === 3 && (
+              <button
+                className={`${buttonBase} text-sm !w-auto bg-green-light text-green-dark hover:bg-green-light-2`}
+                onClick={handleExit}
+                disabled={loading}
+              >
+                <Check className="w-5 h-5 stroke-1" />
+              </button>
+            )}
+          </div>
+          {room.teachers.length > 0 && room.status === 1 && (
+            <div className="flex flex-col gap-1">
+              {room.teachers.map((teacher) => (
+                <div
+                  key={teacher.id}
+                  className="flex justify-between items-center"
                 >
-                  <UserMinus className="w-5 h-5 stroke-1" />
-                </button>
-              ) : (
-                <button
-                  className={`${buttonBase} !w-auto`}
-                  onClick={() => handleAddTeacher(teacher.full_name)}
-                  disabled={loading}
-                >
-                  <UserPlus className="w-5 h-5 stroke-1" />
-                </button>
-              )}
+                  <span
+                    className={`text-sm ${(room.status === 0 || room.status === 2) &&
+                      room.lastUse &&
+                      room.lastUse.user_full_name === teacher.full_name &&
+                      darkColors[room.status]
+                      }`}
+                  >
+                    {teacher.full_name.toUpperCase()}
+                  </span>
+                  {(room.status === 0 || room.status === 2) &&
+                    room.lastUse &&
+                    room.lastUse.user_full_name === teacher.full_name ? (
+                    <button
+                      className={`${buttonBase} !w-auto`}
+                      onClick={handleExit}
+                      disabled={loading}
+                    >
+                      <UserMinus className="w-5 h-5 stroke-1" />
+                    </button>
+                  ) : (
+                    <button
+                      className={`${buttonBase} !w-auto`}
+                      onClick={() => handleAddTeacher(teacher.full_name)}
+                      disabled={loading}
+                    >
+                      <UserPlus className="w-5 h-5 stroke-1" />
+                    </button>
+                  )}
+                </div>
+              ))}
             </div>
-          ))}
-         
+          )}
+
         </div>
       )}
 
       {room.score && (
         <div className="w-full">
           <ScoreBar score={room.score} maxScore={10} />
+        </div>
+      )}
+
+      {(room.status === 3) && room.lastUse && (
+        <div className="flex flex-col">
+          <div className={`p-4 ${lightColors[room.status]} flex flex-col`}>
+            <p className="font-semibold">
+              {room.lastUse.user_full_name.toUpperCase()}
+            </p>
+            <div className="flex justify-between">
+
+            </div>
+          </div>
         </div>
       )}
 

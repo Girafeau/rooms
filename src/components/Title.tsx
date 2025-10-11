@@ -23,9 +23,13 @@ export function Title({ title, button, back = false, backTo }: Props) {
   }
 
   return (
-    <div className="sticky top-0 z-10 flex items-center gap-4 bg-white py-4 border-b border-grey justify-between mb-4">
-      <Clock />
-      <h1 className="text-2xl font-title">{title}</h1>
+    <div className="sticky top-0 z-10 flex items-center gap-4 bg-white py-4 border-b border-grey justify-between">
+      <div className="flex gap-2 items-center">
+         <h1 className="text-2xl font-bold">{title}</h1>
+  <Clock />
+     
+      </div>
+    
       {back && (
         <div className="flex gap-2 items-center">
            {button}

@@ -57,7 +57,7 @@ export function RoomTypeFilter() {
             <div
               onClick={() => setSortMode("floor")}
               className={`flex items-center cursor-pointer text-sm rounded-full py-3 px-4 ${
-                sortMode === "floor" ? "bg-dark-grey" : "bg-grey"
+                sortMode === "floor" ? "bg-black text-white" : "bg-grey"
               }`}
             >
               étage décroissant
@@ -65,19 +65,12 @@ export function RoomTypeFilter() {
             <div
               onClick={() => setSortMode("time")}
               className={`flex items-center cursor-pointer text-sm rounded-full py-3 px-4 ${
-                sortMode === "time" ? "bg-dark-grey" : "bg-grey"
+                sortMode === "time" ? "bg-black text-white" : "bg-grey"
               }`}
             >
               temps restant
             </div>
-            <div
-              onClick={() => setSortMode("list")}
-              className={`flex items-center cursor-pointer text-sm rounded-full py-3 px-4 ${
-                sortMode === "list" ? "bg-dark-grey" : "bg-grey"
-              }`}
-            >
-              liste
-            </div>
+
           </div>
         </div>
       </div>
@@ -93,7 +86,7 @@ export function RoomTypeFilter() {
                 key={type}
                 onClick={() => toggleType(type)}
                 className={`flex bg-grey items-center cursor-pointer text-sm rounded-full py-3 px-4 ${
-                  isChecked ? "!bg-dark-grey" : ""
+                  isChecked ? "!bg-black text-white" : ""
                 }`}
               >
                 <span>type : {type.toLowerCase()}</span>
@@ -108,7 +101,7 @@ export function RoomTypeFilter() {
                 key={r}
                 onClick={() => toggleReserved(r)}
                 className={`flex bg-grey items-center cursor-pointer text-sm rounded-full py-3 px-4 ${
-                  isChecked ? "!bg-dark-grey" : ""
+                  isChecked ? "!bg-black text-white" : ""
                 }`}
               >
                 <span>type : {r.toLowerCase()}</span>
@@ -123,7 +116,7 @@ export function RoomTypeFilter() {
                 key={status}
                 onClick={() => toggleStatus(status)}
                 className={`flex bg-grey items-center cursor-pointer text-sm rounded-full py-3 px-4 ${
-                  isChecked ? "!bg-dark-grey" : ""
+                  isChecked ? "!bg-black text-white" : ""
                 }`}
               >
                 <span>status : {status}</span>

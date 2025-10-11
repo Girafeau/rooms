@@ -37,7 +37,7 @@ export function ScanHistoryPanel({ open, onClose }: Props) {
       >
         {/* Header */}
         <div className="flex items-center justify-between mx-4 py-4 border-b border-grey">
-          <h2 className="font-semibold text-lg">Historique des scans</h2>
+          <h2 className="font-title text-2xl">Liste des scans</h2>
           <div className="flex items-center gap-2">
             <button
               onClick={() => setShowManualModal(true)}
