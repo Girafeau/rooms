@@ -275,9 +275,9 @@ export function RoomCard({ room }: Props) {
           </div>
         </div>
 
-        {room.hidden_description && (
+        {(room.hidden_description || room.status === 3)  && (
           <div className={`p-4 ${lightColors[room.status]} flex flex-col`}>
-            <p className="text-sm">{room.hidden_description}</p>
+            <p className="text-sm">{room.status === 3 && "La salle est indisponible. "}{room.hidden_description}</p>
           </div>
         )}
       </div>
@@ -350,19 +350,6 @@ export function RoomCard({ room }: Props) {
       {room.score && (
         <div className="w-full">
           <ScoreBar score={room.score} maxScore={10} />
-        </div>
-      )}
-
-      {(room.status === 3) && room.lastUse && (
-        <div className="flex flex-col">
-          <div className={`p-4 ${lightColors[room.status]} flex flex-col`}>
-            <p className="font-semibold">
-              {room.lastUse.user_full_name.toUpperCase()}
-            </p>
-            <div className="flex justify-between">
-
-            </div>
-          </div>
         </div>
       )}
 

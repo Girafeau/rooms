@@ -32,13 +32,14 @@ export type Room = {
     | "Réservé"
 
     export const types: Type[] = ["Studio", "Salle"]
-    export const statuses: number[] = [0, 1, 2]
+    export const statuses: number[] = [0, 1, 2, 3]
     export const reserved: Reserved[] = ["Standard"]
 
    export const statusLabels: Record<string, string> = {
   "0": "Occupé",
   "1": "Libre",
   "2": "Délogeable",
+  "3": "Indisponible",
 }
 
 

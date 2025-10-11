@@ -1,5 +1,5 @@
 import { useFilterStore } from "../store/useFilterStore"
-import { statuses, types, reserved } from "../types/Room"
+import { statuses, types, reserved, statusLabels } from "../types/Room"
 import { inputBase } from "../App"
 
 export function RoomTypeFilter() {
@@ -119,7 +119,7 @@ export function RoomTypeFilter() {
                   isChecked ? "!bg-black text-white" : ""
                 }`}
               >
-                <span>status : {status}</span>
+                <span>status : {statusLabels[status].toLowerCase()}</span>
               </div>
             )
           })}
