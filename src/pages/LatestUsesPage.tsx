@@ -16,6 +16,7 @@ export function LatestUsesPage() {
     const [searchRoom, setSearchRoom] = useState("")
     const [period, setPeriod] = useState<Period>("all_time")
     const [limit, setLimit] = useState(20)
+  const [filtersVisible, setFiltersVisible] = useState(true) // 👈 filtres visibles par défaut
 
     const fetchUses = async () => {
         setLoading(true)
@@ -43,16 +44,17 @@ export function LatestUsesPage() {
     }, [searchName, searchRoom, period, limit])
 
     return (
-        <div className="px-4">
+        <div className="flex flex-col gap-4 px-4">
            <Title back={true} title="" button={<div className="flex items-center gap-2">
-          <button
-
-            className={`${buttonBase} !p-4 !w-auto bg-white hover:bg-grey`}
-          >
+                <button
+        onClick={() => setFiltersVisible((prev) => !prev)}
+        className={`${buttonBase} !p-4 !w-auto ${filtersVisible ? "!bg-black text-white" : "bg-white hover:bg-grey"}`}
+      >
             <ListFilterPlus className="w-5 h-5 stroke-1" />
           </button>
         </div>} />
             {/* Filtres */}
+        {filtersVisible &&
             <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
                 <div className="flex flex-col gap-2">
                     <div className="flex gap-2 text-sm"> <span>Recherche par nom</span></div>
@@ -102,6 +104,7 @@ export function LatestUsesPage() {
                     />
                 </div>
             </div>
+        }
 
             {/* Liste */}
             {loading ? (
@@ -113,7 +116,7 @@ export function LatestUsesPage() {
                     {uses.map((use) => (
                         <li
                             key={use.id}
-                            className="p-4 flex justify-between items-center bg-grey-transparent"
+                            className="p-4 flex justify-between items-center bg-grey"
                         >
                             <div>
                                 <p>{use.room_number}</p>

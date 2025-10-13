@@ -35,6 +35,7 @@ export default function AccessAndBanPage() {
     const [search, setSearch] = useState("")
     const [roomSearch, setRoomSearch] = useState("")
     const [filterBan, setFilterBan] = useState<string[]>([])
+  const [filtersVisible, setFiltersVisible] = useState(true) // 👈 filtres visibles par défaut
 
     const [accessRights, setAccessRights] = useState<Record<number, AccessRight[]>>({})
     const [bans, setBans] = useState<Record<number, Ban | null>>({})
@@ -188,12 +189,12 @@ export default function AccessAndBanPage() {
     })
 
     return (
-        <div className="px-4">
+        <div className="flex flex-col gap-4 px-4">
              <Title back={true} title="" button={<div className="flex items-center gap-2">
                  <button
-
-            className={`${buttonBase} !p-4 !w-auto bg-white hover:bg-grey`}
-          >
+        onClick={() => setFiltersVisible((prev) => !prev)}
+        className={`${buttonBase} !p-4 !w-auto ${filtersVisible ? "!bg-black text-white" : "bg-white hover:bg-grey"}`}
+      >
             <ListFilterPlus className="w-5 h-5 stroke-1" />
           </button>
           <button
@@ -207,7 +208,9 @@ export default function AccessAndBanPage() {
         </Title>
            
 
+
             {/* Barre de recherche et filtres */}
+        {filtersVisible &&
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="flex flex-col gap-2">
                     <p className="text-sm">Recherche par nom</p>
@@ -235,7 +238,7 @@ export default function AccessAndBanPage() {
                     <p className="text-sm">Liste des filtres</p>
                     <div className="flex gap-2">
                         <div
-                                      className={`flex items-center cursor-pointer text-sm rounded-full py-3 px-4 ${filterBan.includes("banned")  ? "bg-dark-grey" : "bg-grey"}`}
+                                      className={`flex items-center cursor-pointer text-sm rounded-full py-3 px-4 ${filterBan.includes("banned")  ? "bg-black text-white" : "bg-grey"}`}
 
                           
                             onClick={() =>
@@ -249,7 +252,7 @@ export default function AccessAndBanPage() {
                             status : banni
                         </div>
                         <div
-                             className={`flex items-center cursor-pointer text-sm rounded-full py-3 px-4 ${filterBan.includes("notBanned")  ? "bg-dark-grey" : "bg-grey"}`}
+                             className={`flex items-center cursor-pointer text-sm rounded-full py-3 px-4 ${filterBan.includes("notBanned")  ? "bg-black text-white" : "bg-grey"}`}
 
                           
                             onClick={() =>
@@ -265,6 +268,7 @@ export default function AccessAndBanPage() {
                     </div>
                 </div>
             </div>
+        }
 
             {/* Liste des utilisateurs */}
             <div className="flex flex-col gap-4">

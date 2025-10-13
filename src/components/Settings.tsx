@@ -3,6 +3,7 @@ import { supabase } from "../lib/supabase"
 import { useSettingsStore } from "../store/useSettingsStore"
 import { useAuthStore } from "../store/authStore"
 import { IconCheckbox } from "./IconCheckbox"
+import ImportUsesFromCsv from "./ImportUseFromCsv"
 
 export function Settings() {
   const {
@@ -71,6 +72,7 @@ export function Settings() {
               disabled={loading}
             />
           </div>
+          <ImportUsesFromCsv />
         </div>
       )}
     </div>
