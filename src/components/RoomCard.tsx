@@ -36,7 +36,6 @@ export function RoomCard({ room }: Props) {
 
   const { selectedScan } = useScanStore()
   const [show, setShow] = useState(false)
-  const [replacing, setReplacing] = useState(false)
   const [loading, setLoading] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
@@ -91,7 +90,7 @@ export function RoomCard({ room }: Props) {
     return !!data
   }
 
-  const handleSetUnavailable = async () => {
+  const handleSetUnavailable = async (replacing: boolean) => {
     setLoading(true)
 
     if (replacing && room.lastUse) {
@@ -114,13 +113,12 @@ export function RoomCard({ room }: Props) {
       })
       if (error) console.error(error)
     } finally {
-      setReplacing(false)
       setLoading(false)
       setShow(false)
     }
   }
 
-  const handleAddUse = async () => {
+  const handleAddUse = async (replacing: boolean) => {
     if (!selectedScan || !selectedScan.userFullName) {
       setErrorMessage("Personne n'a été scanné.")
       return
@@ -180,7 +178,7 @@ export function RoomCard({ room }: Props) {
     })
 
     if (!error) {
-      setReplacing(false)
+      
     } else {
       console.error(error)
     }
@@ -200,11 +198,6 @@ export function RoomCard({ room }: Props) {
     if (error) console.error(error)
     setLoading(false)
     setShow(false)
-  }
-
-  const handlePrepareReplace = () => {
-    setReplacing(true)
-    handleAddUse()
   }
 
   const handleAddMoreDuration = async () => {
@@ -233,7 +226,7 @@ export function RoomCard({ room }: Props) {
   }
 }
 
-  const handleAddTeacher = async (full_name: string) => {
+  const handleAddTeacher = async (replacing: boolean, full_name: string) => {
     setLoading(true)
 
     if (replacing && room.lastUse) {
@@ -254,7 +247,6 @@ export function RoomCard({ room }: Props) {
     })
 
     if (!error) {
-      setReplacing(false)
       setShow(false)
     } else {
       console.error(error)
@@ -301,7 +293,7 @@ export function RoomCard({ room }: Props) {
             {room.status === 1 && (
               <button
                 className={`${buttonBase} text-sm !w-auto bg-red-light text-red hover:bg-red-light-2`}
-                onClick={handleSetUnavailable}
+                onClick={() => handleSetUnavailable(false)}
                 disabled={loading}
               >
                 <Ban className="w-5 h-5 stroke-1" />
@@ -346,7 +338,7 @@ export function RoomCard({ room }: Props) {
                   ) : (
                     <button
                       className={`${buttonBase} !w-auto`}
-                      onClick={() => handleAddTeacher(teacher.full_name)}
+                      onClick={() => handleAddTeacher(false, teacher.full_name)}
                       disabled={loading}
                     >
                       <UserPlus className="w-5 h-5 stroke-1" />
@@ -398,7 +390,7 @@ export function RoomCard({ room }: Props) {
             </button>
             <button
               className={`${buttonBase}`}
-              onClick={handlePrepareReplace}
+              onClick={() => handleAddUse(true)}
               disabled={loading}
             >
               <UserPen className="w-5 h-5 stroke-1" />
@@ -420,7 +412,7 @@ export function RoomCard({ room }: Props) {
         <div className="flex flex-col gap-2">
           <button
             className={`${buttonBase}`}
-            onClick={() => handleAddUse()}
+            onClick={() => handleAddUse(false)}
             disabled={loading}
           >
             <UserPlus className="w-5 h-5 stroke-1" />
