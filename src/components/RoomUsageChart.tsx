@@ -7,6 +7,7 @@ import {
   ResponsiveContainer,
 } from "recharts"
 import { useMemo } from "react"
+import React from "react"
 
 type Use = {
   entry_time: string
@@ -15,7 +16,7 @@ type Use = {
   kickable_activation_time?: string | null
 }
 
-export default function RoomUsageChart({
+function RoomUsageChart({
   usesToday,
 }: {
   usesToday: Use[]
@@ -97,14 +98,15 @@ export default function RoomUsageChart({
         >
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis
-            dataKey="time"
-            tickFormatter={(v) => v.split(":")[0] + "h"} // n'affiche que l’heure
-            ticks={chartData
-              .filter((d) => d.time.endsWith(":00")) // 🧠 seulement les heures rondes
-              .map((d) => d.time)}
-            tick={{ fontSize: 10 }}
-            interval="preserveStartEnd"
-          />
+  dataKey="time"
+  tickFormatter={(v) => v.split(":")[0] + "h"}
+  ticks={chartData
+    .filter((d) => d.time.endsWith(":00")) // heures pleines
+    .map((d) => d.time)}
+  domain={['dataMin', 'dataMax']} // 👈 garantit 8h → 21h
+  tick={{ fontSize: 10 }}
+  interval="preserveStartEnd"
+/>
           <Tooltip content={<CustomTooltip />} />
 
           {/* 🟢 Libre */}
@@ -179,3 +181,5 @@ function CustomTooltip({ active, payload }: any) {
   }
   return null
 }
+
+export default React.memo(RoomUsageChart)

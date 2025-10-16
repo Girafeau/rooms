@@ -6,6 +6,7 @@ import { statusLabels, type RoomWithStatus } from "../types/Room"
 import formatHHMM from "../utils/format"
 import { useRoomActions } from "../hooks/useRoomActions"
 import RoomUsageChart from "./RoomUsageChart"
+import { ScoreBar } from "./ScoreBar"
 
 type Props = {
     room: RoomWithStatus | null
@@ -56,7 +57,7 @@ export function RoomPanel({ room, open, onClose }: Props) {
 
         const { data, error } = await supabase
             .from("uses")
-            .select("entry_time, exit_time, user_full_name")
+            .select("entry_time, exit_time, kickable_activation_time, user_full_name")
             .eq("room_number", room.number)
             .gte("entry_time", todayStart.toISOString())
             .lte("entry_time", todayEnd.toISOString())
@@ -86,7 +87,7 @@ export function RoomPanel({ room, open, onClose }: Props) {
 
             {/* Panel */}
             <div
-                className={`fixed top-0 right-0 h-full w-140 bg-white border-l border-grey transform transition-transform duration-300 z-50
+                className={`fixed top-0 right-0 h-full w-120 bg-white border-l border-grey transform transition-transform duration-300 z-50
           ${open ? "translate-x-0" : "translate-x-full"}`}
             >
                 {/* Header */}
@@ -99,7 +100,7 @@ export function RoomPanel({ room, open, onClose }: Props) {
                         {room.status === 1 && <button onClick={() => handleSetUnavailable(true)} className={`${buttonBase} !w-auto !p-4 bg-red-light text-red hover:bg-red-light-2`} title="Rendre la salle indisponible">
                             <DoorClosedLocked className="w-5 h-5 stroke-1" />
                         </button>}
-                        {room.status === 3 && <button onClick={handleExit} className={`${buttonBase} !w-auto !p-4 bg-green-light text-green-dark hover:bg-green-light-2`} title="Rendre la salle disponible">
+                        {room.status === 3 && <button onClick={handleExit} className={`${buttonBase} !w-auto !p-4 !hover:bg-green-light-2 !bg-green-light text-green-dark`} title="Rendre la salle disponible">
                             <DoorOpen className="w-5 h-5 stroke-1" />
                         </button>}
                         <button onClick={onClose} className={`${buttonBase} !w-auto !p-4`}>
@@ -124,6 +125,12 @@ export function RoomPanel({ room, open, onClose }: Props) {
                             </div>
                         )}
                     </div>
+
+                     {room.score && (
+                            <div className="w-full">
+                              <ScoreBar score={room.score} maxScore={10} />
+                            </div>
+                          )}
 
 
                     {/* Dernier use */}
@@ -151,7 +158,7 @@ export function RoomPanel({ room, open, onClose }: Props) {
                             </div>
                             <div>
                                 <button
-                                    className={`${buttonBase} !w-auto !p-4 bg-red-light text-red hover:bg-red-light-2`}
+                                    className={`${buttonBase} !w-auto !p-4`}
                                     onClick={handleExit}
                                     disabled={loading}
                                 >
@@ -164,7 +171,7 @@ export function RoomPanel({ room, open, onClose }: Props) {
                     {/* Liste des professeurs */}
                     {room.teachers.length > 0 &&
                         <div>
-                            <p className="text-xl font-title">Professeurs</p>
+                            <p className="text-xl font-title"></p>
                             <div className="flex flex-col gap-2">
 
                                 {room.teachers.map((t) => (
@@ -187,7 +194,7 @@ export function RoomPanel({ room, open, onClose }: Props) {
                     {/* Historique */}
                     <div>
                         <div className="flex justify-between items-center mb-2">
-                            <p className="text-xl font-title">Dernières utilisations</p>
+                            <p className="text-xl font-title"></p>
 
                         </div>
                         <div className="flex flex-col gap-2">
