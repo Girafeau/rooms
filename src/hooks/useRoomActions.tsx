@@ -7,9 +7,9 @@ import { useScanStore } from "../store/useScanStore"
 export function useRoomActions(room?: RoomWithStatus | null) {
   const { selectedScan } = useScanStore()
   const [loading, setLoading] = useState(false)
-   const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
-   useEffect(() => {
+  useEffect(() => {
     if (!errorMessage) return
     const timer = setTimeout(() => setErrorMessage(null), 4000)
     return () => clearTimeout(timer)
@@ -85,45 +85,57 @@ export function useRoomActions(room?: RoomWithStatus | null) {
       if (error) console.error(error)
     } finally {
       setLoading(false)
-      
+
     }
   }
 
-  const handleAddUse = async (replacing: boolean) => {
+  const handleAddUse = async (
+    replacing: boolean,
+    user_full_name?: string,
+    user_id?: string
+  ) => {
     if (!room) return
-    if (!selectedScan || !selectedScan.userFullName) {
-      setErrorMessage("Personne n'a été scanné.")
+
+    // ✅ Priorité : si un user_full_name est passé en argument, on l’utilise
+    const fullName = user_full_name?.trim() || selectedScan?.userFullName?.trim()
+    const id = user_id || selectedScan?.userId
+
+    if (!fullName) {
+      setErrorMessage("Pas d'utilisateur scanné.")
       return
     }
 
-    if (selectedScan.userId) {
-      const { banned, reason, expires_at } = await checkAccessBans(Number(selectedScan.userId))
+    // ✅ Si userId existe, on vérifie bans + droits
+    if (id) {
+      const { banned, reason, expires_at } = await checkAccessBans(Number(id))
       if (banned) {
         setErrorMessage(
-          `L'utilisateur est banni
-                  ${expires_at
-            ? " jusqu'au " + new Date(expires_at!).toLocaleDateString("fr-FR", {
+          `L'utilisateur est banni${expires_at
+            ? " jusqu'au " +
+            new Date(expires_at!).toLocaleDateString("fr-FR", {
               day: "2-digit",
               month: "short",
               hour: "2-digit",
               minute: "2-digit",
             })
               .replace(",", "")
-            : " à vie "}${reason ? " pour la raison suivante : " + reason + " »" : "."}`
+            : " à vie"
+          }${reason ? " pour la raison suivante : « " + reason + " »" : "."}`
         )
         return
       }
     }
 
-    // ✅ Vérification des droits
+    // ✅ Vérification des droits uniquement si salle restreinte et userId connu
     if (room.is_restricted) {
-      if (selectedScan.userId) {
-        const hasAccess = await checkAccessRights(Number(selectedScan.userId), room.number)
+      if (id) {
+        const hasAccess = await checkAccessRights(Number(id), room.number)
         if (!hasAccess) {
           setErrorMessage("L'utilisateur n'est pas autorisé.")
           return
         }
       } else {
+        // si on n’a ni userId ni nom fourni manuellement
         setErrorMessage("Les droits ne peuvent pas être vérifiés car l'utilisateur n'est pas connu.")
         return
       }
@@ -132,6 +144,7 @@ export function useRoomActions(room?: RoomWithStatus | null) {
     setErrorMessage(null)
     setLoading(true)
 
+    // ✅ Si remplacement, on clôt l’usage précédent
     if (replacing && room.lastUse) {
       const { error: exitError } = await supabase
         .from("uses")
@@ -141,22 +154,23 @@ export function useRoomActions(room?: RoomWithStatus | null) {
       if (exitError) console.error(exitError)
     }
 
+    // ✅ Insertion du nouvel usage
     const { error } = await supabase.from("uses").insert({
       room_number: room.number,
-      user_full_name: selectedScan.userFullName,
+      user_full_name: fullName.toUpperCase(),
       entry_time: new Date().toISOString(),
-      max_duration: selectedScan.duration,
+      max_duration: selectedScan?.duration ?? 120,
       exit_time: null,
     })
 
-    if (!error) {
-      
-    } else {
-      console.error(error)
+    if (error) {
+      console.error("Erreur insertion use:", error)
+      setErrorMessage("Erreur lors de l'enregistrement.")
     }
 
     setLoading(false)
   }
+
 
   const handleExit = async () => {
     if (!room) return
@@ -174,30 +188,30 @@ export function useRoomActions(room?: RoomWithStatus | null) {
 
   const handleAddMoreDuration = async () => {
     if (!room) return
-  if (!room.lastUse) return
-  setLoading(true)
+    if (!room.lastUse) return
+    setLoading(true)
 
-  try {
-    const entryTime = new Date(room.lastUse.entry_time)
-    const now = new Date()
-    const elapsedMs = now.getTime() - entryTime.getTime()
-    const elapsedMinutes = Math.floor(elapsedMs / 1000 / 60)
+    try {
+      const entryTime = new Date(room.lastUse.entry_time)
+      const now = new Date()
+      const elapsedMs = now.getTime() - entryTime.getTime()
+      const elapsedMinutes = Math.floor(elapsedMs / 1000 / 60)
 
-    // ⏱️ nouveau max_duration = temps écoulé + 120 minutes restantes
-    const newMaxDuration = elapsedMinutes + 120
+      // ⏱️ nouveau max_duration = temps écoulé + 120 minutes restantes
+      const newMaxDuration = elapsedMinutes + 120
 
-    const { error } = await supabase
-      .from("uses")
-      .update({ max_duration: newMaxDuration })
-      .eq("id", room.lastUse.id)
+      const { error } = await supabase
+        .from("uses")
+        .update({ max_duration: newMaxDuration })
+        .eq("id", room.lastUse.id)
 
-    if (error) console.error(error)
-  } catch (e) {
-    console.error(e)
-  } finally {
-    setLoading(false)
+      if (error) console.error(error)
+    } catch (e) {
+      console.error(e)
+    } finally {
+      setLoading(false)
+    }
   }
-}
 
   const handleAddTeacher = async (replacing: boolean, full_name: string) => {
     if (!room) return
@@ -221,7 +235,7 @@ export function useRoomActions(room?: RoomWithStatus | null) {
     })
 
     if (!error) {
-     
+
     } else {
       console.error(error)
     }

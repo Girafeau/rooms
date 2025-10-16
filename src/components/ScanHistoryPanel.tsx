@@ -39,7 +39,7 @@ export function ScanHistoryPanel({ open, onClose }: Props) {
         {/* Header */}
         <div className="flex items-center justify-between mx-4 py-4 border-b border-grey">
           <div className="flex items-center gap-2">
-            <h2 className="font-title text-xl font-semibold"></h2>
+            <h2 className="font-title text-2xl">Scans</h2>
 
           
           </div>
@@ -79,7 +79,12 @@ export function ScanHistoryPanel({ open, onClose }: Props) {
         {/* Contenu */}
         <div className="p-4 flex flex-col gap-4 overflow-y-auto h-full">
           {scans.length === 0 && (
-            <p className="text-sm">Personne n'a été scanné pour l'instant.</p>
+            
+             
+            <p className="text-sm">C'est vide pour l'instant.</p>
+            
+            
+        
           )}
 
           {/* Liste des scans */}
@@ -185,7 +190,7 @@ function ManualAddModal({
     <div className="fixed inset-0 bg-grey-transparent flex items-center justify-center z-50">
       <div className="bg-white w-96 flex flex-col gap-4">
         <div className="flex items-center justify-between mx-4 py-4 border-b border-grey">
-          <h2 className="font-semibold text-lg"></h2>
+          <h2 className="text-xl font-title">Ajouter un utilisateur</h2>
           <button onClick={onClose} className={`${buttonBase} !w-auto !p-4`}>
             <X className="w-5 h-5 stroke-1" />
           </button>
@@ -220,19 +225,22 @@ function ManualAddModal({
               <div className="flex flex-col gap-2 mt-4">
                 <p className="text-sm">Personne n'a été trouvé.</p>
                 <p className="text-sm">Vous pouvez ajouter cette personne manuellement :</p>
-                <button
-                  className={`${buttonBase} text-sm flex items-center gap-2`}
+                <div>
+                   <button
+                  className={`${buttonBase} text-sm flex items-center gap-2 !w-auto !p-4`}
                   onClick={() =>
                     onAdd({
                       id: null,
                       full_name: search.trim().toUpperCase(),
-                      barcode: "Saisi manuellement - utilisateur inconnu.",
+                      barcode: "saisie manuelle",
                     })
                   }
                 >
                   <Plus className="w-5 h-5 stroke-1" />
                  
                 </button>
+                  </div>
+               
               </div>
             )}
           </div>
@@ -260,7 +268,7 @@ function UnknownUserForm({
       }}
       className="flex flex-col gap-2 p-4 bg-white border border-grey mt-2 mb-2"
     >
-      <p className="text-xs text-red">Utilisateur inconnu — renseignez un nom.</p>
+      <p className="text-sm text-red">L'utilisateur n'est pas connu. Renseignez ses informations.</p>
       <p className="text-sm">Nom et prénom</p>
       <input
         type="text"

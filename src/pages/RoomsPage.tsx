@@ -125,24 +125,25 @@ export default function RoomsPage() {
         
         {filtersVisible && <RoomTypeFilter />}
         <ScanHistoryPanel open={scanPanelOpen} onClose={closeScanPanel} />
+        
         <div className="flex flex-col gap-4">
           {sortedFloors.map((floor) => (
             <div key={floor}>
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4">
-                <div className="text-center text-sm">
-                  <div className="p-4 flex flex-col items-center h-full justify-center bg-grey striped-background">
+                <div className="text-center">
+                  <div className="p-4 flex flex-col items-center h-full justify-center bg-grey striped-background font-title">
                     {floor > 0 ? (
                       <div>
-                        <h2 className="text-l font-semibold">
+                        <h2 className="text-xl">
                           {floor}
-                          {floor === 1 ? " er".toUpperCase() : " ème".toUpperCase()}
+                          {floor === 1 ? " er" : " ème"}
                         </h2>
-                        <p className="text-sm font-semibold">{"étage".toUpperCase()}</p>
+                        <p className="text-xl">{"étage"}</p>
                       </div>
                     ) : floor < 0 ? (
-                      <h2 className="text-l font-semibold">{"sous-sol".toUpperCase()}</h2>
+                      <h2 className="text-xl">{"Sous-sol"}</h2>
                     ) : (
-                      <h2 className="text-l font-semibold">{"rez-de-chaussée".toUpperCase()}</h2>
+                      <h2 className="text-xl">{"Rez-de-chaussée"}</h2>
                     )}
                   </div>
                 </div>

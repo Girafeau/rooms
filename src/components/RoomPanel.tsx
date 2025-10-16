@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react"
 import { supabase } from "../lib/supabase"
-import { X, UserPlus, UserMinus, Clock3, RefreshCcw, DoorClosedLocked, DoorOpen } from "lucide-react"
+import { X, UserPlus, UserMinus, DoorClosedLocked, DoorOpen } from "lucide-react"
 import { buttonBase } from "../App"
 import { statusLabels, type RoomWithStatus } from "../types/Room"
 import formatHHMM from "../utils/format"
 import { useRoomActions } from "../hooks/useRoomActions"
+import RoomUsageChart from "./RoomUsageChart"
 
 type Props = {
     room: RoomWithStatus | null
@@ -34,14 +35,35 @@ const lightColors: Record<RoomWithStatus["status"], string> = {
 }
 export function RoomPanel({ room, open, onClose }: Props) {
     const [recentUses, setRecentUses] = useState<any[]>([])
+    const [usesToday, setUsesToday] = useState<any[]>([])
 
-    const { handleAddUse, handleExit, loading, handleAddTeacher, handleSetUnavailable } = useRoomActions(room)
+    const { handleExit, loading, handleAddTeacher, handleSetUnavailable } = useRoomActions(room)
 
 
     useEffect(() => {
         if (!room) return
+        if (!open) return
         fetchRecentUses()
-    }, [])
+        fetchUsesToday()
+    }, [open])
+
+    const fetchUsesToday = async () => {
+        if (!room) return
+        const todayStart = new Date()
+        todayStart.setHours(0, 0, 0, 0)
+        const todayEnd = new Date()
+        todayEnd.setHours(23, 59, 59, 999)
+
+        const { data, error } = await supabase
+            .from("uses")
+            .select("entry_time, exit_time, user_full_name")
+            .eq("room_number", room.number)
+            .gte("entry_time", todayStart.toISOString())
+            .lte("entry_time", todayEnd.toISOString())
+
+        if (!error && data) setUsesToday(data)
+    }
+
 
     const fetchRecentUses = async () => {
         if (!room) return
@@ -64,13 +86,13 @@ export function RoomPanel({ room, open, onClose }: Props) {
 
             {/* Panel */}
             <div
-                className={`fixed top-0 right-0 h-full w-120 bg-white border-l border-grey transform transition-transform duration-300 z-50
+                className={`fixed top-0 right-0 h-full w-140 bg-white border-l border-grey transform transition-transform duration-300 z-50
           ${open ? "translate-x-0" : "translate-x-full"}`}
             >
                 {/* Header */}
                 <div className="flex items-center justify-between mx-4 py-4 border-b border-grey">
                     <div>
-                        <h2 className="text-2xl">{room.number}</h2>
+                        <h2 className="text-2xl font-title">{room.number}</h2>
                         {room.name && <p className="text-sm text-grey-dark">{room.name.toUpperCase()}</p>}
                     </div>
                     <div className="flex items-center gap-2">
@@ -87,63 +109,76 @@ export function RoomPanel({ room, open, onClose }: Props) {
                 </div>
 
                 {/* Contenu */}
-                <div className="p-4 flex flex-col gap-4 overflow-y-auto h-full">
+                <div className="p-4 flex flex-col gap-2 overflow-y-auto h-full">
 
                     {/* Statut */}
                     <div>
-  <div className={`p-4 ${colors[room.status]} ${room.status === 3 ? "striped-background-danger" : ""}`}>
-                        <p className={`font-semibold text-sm ${darkColors[room.status]}`}>
-                            {statusLabels[room.status].toUpperCase()}
-                        </p>
-                    </div>
-                    {(room.hidden_description || room.status === 3) && (
-                        <div className={`p-4 ${lightColors[room.status]} flex flex-col`}>
-                            <p className="text-sm">{room.status === 3 && "Pas disponible à l'utilisation. "}{room.hidden_description}</p>
+                        <div className={`p-4 ${colors[room.status]} ${room.status === 3 ? "striped-background-danger" : ""}`}>
+                            <p className={`font-semibold ${darkColors[room.status]}`}>
+                                {statusLabels[room.status].toUpperCase()}
+                            </p>
                         </div>
-                    )}
+                        {(room.hidden_description || room.status === 3) && (
+                            <div className={`p-4 ${lightColors[room.status]} flex flex-col`}>
+                                <p className="text-sm">{room.status === 3 && "Pas disponible à l'utilisation. "}{room.hidden_description}</p>
+                            </div>
+                        )}
                     </div>
-                  
+
 
                     {/* Dernier use */}
                     {room.lastUse && room.status !== 1 && room.status !== 3 && (
-                        <div className={`p-4 ${lightColors[room.status]} flex flex-col gap-2`}>
-                            <p className="font-semibold">{room.lastUse.user_full_name}</p>
-                            <p className="text-sm">
-                                Début :{" "}
-                                {new Date(room.lastUse.entry_time).toLocaleTimeString([], {
-                                    hour: "2-digit",
-                                    minute: "2-digit",
-                                })}
-                            </p>
-                            {room.timeRemaining && room.lastUse.max_duration > 0 && (
-                                <p className="text-sm flex items-center gap-2">
-                                    <Clock3 className="w-4 h-4" /> {formatHHMM(room.timeRemaining)} restantes
+                        <div className="flex flex-col gap-2">
+                            <div className={`p-4 ${lightColors[room.status]} flex flex-col`}>
+                                <p className="font-semibold">
+                                    {room.lastUse.user_full_name.toUpperCase()}
                                 </p>
-                            )}
-                            <button
-                                className={`${buttonBase} text-sm mt-2`}
-                                onClick={handleExit}
-                                disabled={loading}
-                            >
-                                <UserMinus className="w-4 h-4 stroke-1" /> Marquer sortie
-                            </button>
+                                <div className="flex justify-between">
+                                    <p>
+                                        {new Date(room.lastUse.entry_time)
+                                            .toLocaleDateString("fr-FR", {
+                                                day: "2-digit",
+                                                month: "short",
+                                                hour: "2-digit",
+                                                minute: "2-digit",
+                                            })
+                                            .replace(",", "")}
+                                    </p>
+                                    {room.timeRemaining && room.lastUse.max_duration > 0 && (
+                                        <p>{formatHHMM(room.timeRemaining)}</p>
+                                    )}
+                                </div>
+                            </div>
+                            <div>
+                                <button
+                                    className={`${buttonBase} !w-auto !p-4 bg-red-light text-red hover:bg-red-light-2`}
+                                    onClick={handleExit}
+                                    disabled={loading}
+                                >
+                                    <UserMinus className="w-5 h-5 stroke-1" />
+                                </button>
+                            </div>
                         </div>
                     )}
 
                     {/* Liste des professeurs */}
                     {room.teachers.length > 0 &&
                         <div>
-                            <p className="mb-2 text-sm">Liste des professeurs assignés :</p>
+                            <p className="text-xl font-title">Professeurs</p>
                             <div className="flex flex-col gap-2">
+
                                 {room.teachers.map((t) => (
-                                    <button
-                                        key={t.id}
-                                        className={`${buttonBase} justify-between`}
-                                        onClick={() => handleAddTeacher(false, t.full_name)}
-                                    >
-                                        {t.full_name}
-                                        <UserPlus className="w-4 h-4 stroke-1" />
-                                    </button>
+                                    <div key={t.id} className="flex justify-between items-center">
+                                        <p className="text-sm"> {t.full_name}</p>
+                                        <button
+
+                                            className={`${buttonBase} !w-auto !p-4`}
+                                            onClick={() => handleAddTeacher(false, t.full_name)}
+                                        >
+
+                                            <UserPlus className="w-4 h-4 stroke-1" />
+                                        </button>
+                                    </div>
                                 ))}
                             </div>
                         </div>
@@ -152,42 +187,42 @@ export function RoomPanel({ room, open, onClose }: Props) {
                     {/* Historique */}
                     <div>
                         <div className="flex justify-between items-center mb-2">
-                            <p className="text-sm">Liste des derniers passages : </p>
-                            <button
-                                onClick={fetchRecentUses}
-                                className={`${buttonBase} !w-auto !p-2`}
-                            >
-                                <RefreshCcw className="w-4 h-4" />
-                            </button>
+                            <p className="text-xl font-title">Dernières utilisations</p>
+
                         </div>
                         <div className="flex flex-col gap-2">
                             {recentUses.map((use) => (
                                 <div
                                     key={use.id}
-                                    className="p-3 border border-grey rounded-lg flex justify-between items-center"
+                                    className="p-4 bg-grey-2 flex justify-between items-center"
                                 >
                                     <div>
                                         <p className="font-semibold text-sm">{use.user_full_name}</p>
-                                        <p className="text-xs text-grey-dark">
-                                            {new Date(use.entry_time).toLocaleString("fr-FR", {
-                                                day: "2-digit",
-                                                month: "short",
-                                                hour: "2-digit",
-                                                minute: "2-digit",
-                                            })}
-                                        </p>
+                                        <p className="text-sm">
+                                    {new Date(use.entry_time).toLocaleString([], {
+                                        day: "2-digit",
+                                        month: "short",
+                                        hour: "2-digit",
+                                        minute: "2-digit",
+                                    }).replace(",", "")}
+                                    {use.exit_time
+                                    ? ` - ${new Date(use.exit_time).toLocaleString([], {
+                                        day: "2-digit",
+                                        month: "short",
+                                        hour: "2-digit",
+                                        minute: "2-digit",
+                                    }).replace(",", "")}`
+                                    : " - en cours"}
+                                </p>
                                     </div>
-                                    <button
-                                        className={`${buttonBase} !w-auto !p-2`}
-                                        onClick={() => handleAddUse(use.user_full_name)}
-                                    >
-                                        <UserPlus className="w-4 h-4" />
-                                    </button>
+
                                 </div>
                             ))}
                             {recentUses.length === 0 && <p className="text-sm">Pas d'historique disponible.</p>}
                         </div>
                     </div>
+                    <RoomUsageChart usesToday={usesToday} />
+
                 </div>
             </div>
         </>
