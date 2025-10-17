@@ -1,10 +1,12 @@
 import { RoomCardDisplay } from "../components/RoomCardDisplay"
+import { useAuthStore } from "../store/authStore"
 import { useRoomsStore } from "../store/useRoomsStore"
 import { useSettingsStore } from "../store/useSettingsStore"
 
 export default function DisplayPage() {
   const { rooms } = useRoomsStore()
   const { showReservedRooms } = useSettingsStore()
+  const { user } = useAuthStore()
 
   // Filtrage par types dans la page
   const filteredRooms = rooms.filter((r) => r.type === "Studio").filter((r) =>
@@ -60,7 +62,10 @@ export default function DisplayPage() {
 
         </div>
       ))}
-      
+      {user && (
+        <img src="./qrcode.png" className="w-80 h-80"/>
+      )}
+
     </div>
   )
 }
