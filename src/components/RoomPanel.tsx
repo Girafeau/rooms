@@ -5,7 +5,6 @@ import { buttonBase } from "../App"
 import { statusLabels, type RoomWithStatus } from "../types/Room"
 import formatHHMM from "../utils/format"
 import { useRoomActions } from "../hooks/useRoomActions"
-import RoomUsageChart from "./RoomUsageChart"
 import { ScoreBar } from "./ScoreBar"
 
 type Props = {
@@ -36,7 +35,7 @@ const lightColors: Record<RoomWithStatus["status"], string> = {
 }
 export function RoomPanel({ room, open, onClose }: Props) {
     const [recentUses, setRecentUses] = useState<any[]>([])
-    const [usesToday, setUsesToday] = useState<any[]>([])
+    const [, setUsesToday] = useState<any[]>([])
 
     const { handleExit, loading, handleAddTeacher, handleSetUnavailable } = useRoomActions(room)
 
@@ -228,7 +227,7 @@ export function RoomPanel({ room, open, onClose }: Props) {
                             {recentUses.length === 0 && <p className="text-sm">Pas d'historique disponible.</p>}
                         </div>
                     </div>
-                    <RoomUsageChart usesToday={usesToday} />
+                   
 
                 </div>
             </div>
